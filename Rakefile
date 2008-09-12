@@ -3,7 +3,7 @@
 # information.
 
 $:.unshift "lib" if File.directory? "lib"
-require 'rcov/rcovtask'
+require 'rcov/rcov_task'
 require 'rake/testtask'
 require 'rake/rdoctask'
 require 'rake/gempackagetask'
@@ -97,7 +97,7 @@ task :install do
 end
 
 
-PKG_FILES = ["bin/rcov", "lib/rcov.rb", "lib/rcov/coverage_info.rb", "lib/rcov/file_statistics.rb",  "lib/rcov/lowlevel.rb", "lib/rcov/xx.rb", "lib/rcov/version.rb", "lib/rcov/report.rb", "lib/rcov/rcovtask.rb", "ext/rcovrt/extconf.rb", "ext/rcovrt/rcovrt.c", "ext/rcovrt/callsite.c", "LEGAL", "LICENSE", "Rakefile", "README", "THANKS", "test/functional_test.rb", "test/file_statistics_test.rb", "test/assets/sample_03.rb", "test/assets/sample_05-new.rb", "test/code_coverage_analyzer_test.rb", "test/assets/sample_04.rb", "test/assets/sample_02.rb", "test/assets/sample_05-old.rb", "test/assets/sample_01.rb", "test/turn_off_rcovrt.rb", "test/call_site_analyzer_test.rb", "test/assets/sample_05.rb", "rcov.vim", "rcov.el", "setup.rb", "BLURB", "CHANGES"]
+PKG_FILES = ["bin/rcov", "lib/rcov.rb", "lib/rcov/coverage_info.rb", "lib/rcov/file_statistics.rb",  "lib/rcov/lowlevel.rb", "lib/rcov/xx.rb", "lib/rcov/version.rb", "lib/rcov/report.rb", "lib/rcov/rcov_task.rb", "ext/rcovrt/extconf.rb", "ext/rcovrt/rcovrt.c", "ext/rcovrt/callsite.c", "LEGAL", "LICENSE", "Rakefile", "README", "THANKS", "test/functional_test.rb", "test/file_statistics_test.rb", "test/assets/sample_03.rb", "test/assets/sample_05-new.rb", "test/code_coverage_analyzer_test.rb", "test/assets/sample_04.rb", "test/assets/sample_02.rb", "test/assets/sample_05-old.rb", "test/assets/sample_01.rb", "test/turn_off_rcovrt.rb", "test/call_site_analyzer_test.rb", "test/assets/sample_05.rb", "rcov.vim", "rcov.el", "setup.rb", "BLURB", "CHANGES"]
 
 # gem management tasks  Use these to build the java code before creating the gem package
 # this code can also be used to generate the MRI gem.  But I left the gemspec file in too.

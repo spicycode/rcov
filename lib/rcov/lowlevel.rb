@@ -2,8 +2,6 @@
 #
 # See LEGAL and LICENSE for licensing information.
 
-require 'rcov/version'
-
 module Rcov
 
   # RCOV__ performs the low-level tracing of the execution, gathering code

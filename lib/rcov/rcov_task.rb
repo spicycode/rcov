@@ -13,7 +13,7 @@ module Rcov
   #
   # Example:
   #   
-  #   require 'rcov/rcovtask'
+  #   require 'rcov/rcov_task'
   #   
   #   Rcov::RcovTask.new do |t|
   #     t.libs << "test"
@@ -58,7 +58,7 @@ module Rcov
 
     # Glob pattern to match test files. (default is 'test/test*.rb')
     attr_accessor :pattern
-    
+
     # Array of commandline options to pass to ruby when running the rcov loader.
     attr_accessor :ruby_opts
 
@@ -98,32 +98,34 @@ module Rcov
     def define
       lib_path = @libs.join(File::PATH_SEPARATOR)
       actual_name = Hash === name ? name.keys.first : name
+      
       unless Rake.application.last_comment
         desc "Analyze code coverage with tests" + 
-          (@name==:rcov ? "" : " for #{actual_name}")
+        (@name==:rcov ? "" : " for #{actual_name}")
       end
+      
       task @name do
-	run_code = ''
-	RakeFileUtils.verbose(@verbose) do
-	  run_code =
-	    case rcov_path
-	    when nil, ''
-              "-S rcov"
-            else %!"#{rcov_path}"!
-	    end
+        run_code = ''
+        RakeFileUtils.verbose(@verbose) do
+          run_code =
+          case rcov_path
+          when nil, ''
+            "-S rcov"
+          else %!"#{rcov_path}"!
+          end
           ruby_opts = @ruby_opts.clone
           ruby_opts.push( "-I#{lib_path}" )
           ruby_opts.push run_code
-	  ruby_opts.push( "-w" ) if @warning
-	  ruby ruby_opts.join(" ") + " " + option_list +
-            %[ -o "#{@output_dir}" ] +
-	    file_list.collect { |fn| %["#{fn}"] }.join(' ')
-	end
+          ruby_opts.push( "-w" ) if @warning
+          ruby ruby_opts.join(" ") + " " + option_list +
+          %[ -o "#{@output_dir}" ] +
+          file_list.collect { |fn| %["#{fn}"] }.join(' ')
+        end
       end
 
       desc "Remove rcov products for #{actual_name}"
       task paste("clobber_", actual_name) do
-	rm_r @output_dir rescue nil
+        rm_r @output_dir rescue nil
       end
 
       clobber_task = paste("clobber_", actual_name)
@@ -143,14 +145,15 @@ module Rcov
 
     def file_list # :nodoc:
       if ENV['TEST']
-	FileList[ ENV['TEST'] ]
+        FileList[ ENV['TEST'] ]
       else
-	result = []
-	result += @test_files.to_a if @test_files
-	result += FileList[ @pattern ].to_a if @pattern
-	FileList[result]
+        result = []
+        result += @test_files.to_a if @test_files
+        result += FileList[ @pattern ].to_a if @pattern
+        FileList[result]
       end
     end
+  
   end
+  
 end
-

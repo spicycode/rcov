@@ -9,10 +9,10 @@
 # already loaded before coverage tracing is activated, so only code inside
 # methods is actually executed under rcov's inspection.
 
+require File.expand_path(File.join(File.dirname(__FILE__), 'rcov', 'differential_analyzer'))
 require File.expand_path(File.join(File.dirname(__FILE__), 'rcov', 'call_site_analyzer'))
 require File.expand_path(File.join(File.dirname(__FILE__), 'rcov', 'coverage_info'))
 require File.expand_path(File.join(File.dirname(__FILE__), 'rcov', 'code_coverage_analyzer'))
-require File.expand_path(File.join(File.dirname(__FILE__), 'rcov', 'differential_analyzer'))
 require File.expand_path(File.join(File.dirname(__FILE__), 'rcov', 'file_statistics'))
 require File.expand_path(File.join(File.dirname(__FILE__), 'rcov', 'version'))
 

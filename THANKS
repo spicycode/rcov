@@ -54,7 +54,7 @@ Ryan Kinderman:
 * suggested that -Ipath be passed to ruby instead of rcov in RcovTasks
 
 Jan Svitok:
-* reported typo in rcovtask.rb's RDoc
+* reported typo in rcov_task.rb's RDoc
 
 rubikitch:
 * implemented --annotate mode

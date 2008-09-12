@@ -5,7 +5,7 @@ Since 0.4.0, <tt>rcov</tt> features a <tt>Rcov::RcovTask</tt> task for rake
 which can be used to automate test coverage analysis.  Basic usage is as
 follows:
 
- require 'rcov/rcovtask'
+ require 'rcov/rcov_task'
  Rcov::RcovTask.new do |t|
    t.test_files = FileList['test/test*.rb']
    # t.verbose = true     # uncomment to see the executed command

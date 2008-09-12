@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/test_helper'
+require File.expand_path(File.dirname(__FILE__) + '/test_helper')
 
 class TestFileStatistics < Test::Unit::TestCase
   def test_trailing_end_is_inferred

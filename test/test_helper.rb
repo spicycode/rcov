@@ -1,4 +1,5 @@
-require 'test/unit'
-require 'rcov'
 require 'pathname'
 require 'fileutils'
+require 'test/unit'
+
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'rcov'))

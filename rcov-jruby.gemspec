@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.executables = ["rcov"]
   s.extensions = []
   s.extra_rdoc_files = []
-  s.files = ["bin/rcov", "lib/rcov.rb", "lib/rcov/lowlevel.rb", "lib/rcov/coverage_info.rb", "lib/rcov/file_statistics.rb", "lib/rcov/xx.rb", "lib/rcov/version.rb", "lib/rcov/report.rb", "lib/rcov/rcovtask.rb", "lib/rcovrt.jar", "LEGAL", "LICENSE", "Rakefile", "THANKS", "test/functional_test.rb", "test/file_statistics_test.rb", "test/assets/sample_03.rb", "test/assets/sample_05-new.rb", "test/code_coverage_analyzer_test.rb", "test/assets/sample_04.rb", "test/assets/sample_02.rb", "test/assets/sample_05-old.rb", "test/assets/sample_01.rb", "test/turn_off_rcovrt.rb", "test/call_site_analyzer_test.rb", "test/assets/sample_05.rb", "rcov.vim", "rcov.el", "setup.rb", "BLURB", "CHANGES"]
+  s.files = ["bin/rcov", "lib/rcov.rb", "lib/rcov/lowlevel.rb", "lib/rcov/coverage_info.rb", "lib/rcov/file_statistics.rb", "lib/rcov/xx.rb", "lib/rcov/version.rb", "lib/rcov/report.rb", "lib/rcov/rcov_task.rb", "lib/rcovrt.jar", "LEGAL", "LICENSE", "Rakefile", "THANKS", "test/functional_test.rb", "test/file_statistics_test.rb", "test/assets/sample_03.rb", "test/assets/sample_05-new.rb", "test/code_coverage_analyzer_test.rb", "test/assets/sample_04.rb", "test/assets/sample_02.rb", "test/assets/sample_05-old.rb", "test/assets/sample_01.rb", "test/turn_off_rcovrt.rb", "test/call_site_analyzer_test.rb", "test/assets/sample_05.rb", "rcov.vim", "rcov.el", "setup.rb", "BLURB", "CHANGES"]
   s.has_rdoc = true
   s.homepage = %q{http://eigenclass.org/hiki.rb?rcov}
   s.platform = 'jruby'

@@ -16,7 +16,7 @@ require 'optparse'
 require 'ostruct'
 
 SCRIPT_LINES__ = {} unless defined? SCRIPT_LINES__
-require 'rcov/version'
+require 'rcov/version' 
 require 'rcov/report'
 
 #{{{ "main" code

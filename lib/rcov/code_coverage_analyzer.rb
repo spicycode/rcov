@@ -264,6 +264,6 @@ module Rcov
       ivs.each_pair{|iv, val| instance_variable_set(iv, val)}
     end
 
-  end # CodeCoverageAnalyzer
+  end
 
 end
