@@ -9,7 +9,7 @@
 # already loaded before coverage tracing is activated, so only code inside
 # methods is actually executed under rcov's inspection.
 
-require 'rcov/version'
+# require File.expand_path(File.join(File.dirname(__FILE__), 'rcov', 'version')) #'rcov/version'
 
 SCRIPT_LINES__ = {} unless defined? SCRIPT_LINES__
 
@@ -82,7 +82,13 @@ class FileStatistics
   def initialize(name, lines, counts, comments_run_by_default = false)
     @name = name
     @lines = lines
-    initial_coverage = counts.map{|x| (x || 0) > 0 ? true : false }
+    initial_coverage = counts.map { |x|
+      begin
+        return (x.instance_of? String && x.match(/^([1-9][0-9]*)/)) || (x.instance_of? Fixnum && x > 0) 
+      ensure
+        puts "error caught: #{$!.inspect} and #{$!} and #{x.inspect} and #{x.class}"
+      end
+    }
     @coverage = CoverageInfo.new initial_coverage
     @counts = counts
     @is_begin_comment = nil
@@ -917,12 +923,11 @@ class CallSiteAnalyzer < DifferentialAnalyzer
   def expand_name(classname_or_fullname, methodname = nil)
     if methodname.nil?
       case classname_or_fullname
-      when /(.*)#(.*)/: classname, methodname = $1, $2
-      when /(.*)\.(.*)/: classname, methodname = "#<Class:#{$1}>", $2
+      when /(.*)#(.*)/ then classname, methodname = $1, $2
+      when /(.*)\.(.*)/ then classname, methodname = "#<Class:#{$1}>", $2
       else
         raise ArgumentError, "Incorrect method name"
       end
-
       return [classname, methodname]
     end
 

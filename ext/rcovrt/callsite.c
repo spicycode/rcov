@@ -60,7 +60,7 @@ record_method_def_site(VALUE args)
 {
   type_def_site *pargs = (type_def_site *)args;
   VALUE def_site_info;
-  VALUE hash;
+  // VALUE hash;
 
   if( RTEST(rb_hash_aref(method_def_site_info, pargs->curr_meth)) )
           return Qnil;

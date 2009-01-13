@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/test_helper'
 
 class TestCallSiteAnalyzer < Test::Unit::TestCase
 
-  sample_file = File.join(File.dirname(__FILE__), "assets/sample_03.rb")
+  sample_file = File.expand_path File.join(File.dirname(__FILE__), "assets", "sample_03.rb")
   load sample_file
 
   def setup

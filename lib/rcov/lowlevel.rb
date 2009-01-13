@@ -89,7 +89,7 @@ One Click Installer and mswin32 builds) at http://eigenclass.org/hiki.rb?rcov .
               hash = CALLSITES[[klass.to_s, id.to_s]] ||= {}
               hash[caller_arr] ||= 0
               hash[caller_arr] += 1
-              #puts "#{event} #{file} #{line} #{klass.inspect} " +
+              # puts "#{event} #{file} #{line} #{klass.inspect} " +
               #     "#{klass.object_id} #{id} #{eval('self', binding)}"
             rescue Exception
             end
@@ -134,7 +134,7 @@ One Click Installer and mswin32 builds) at http://eigenclass.org/hiki.rb?rcov .
 
     def self.format_backtrace_array(backtrace)
       backtrace.map do |line|
-        md = /^([^:]*)(?::(\d+)(?::in `(.*)'))?/.match(line)
+        md = /^([^:]*)(?::(\d+)(?::in `(?:block in )?(.*)'))?/.match(line)
         raise "Bad backtrace format" unless md
         [nil, md[3] ? md[3].to_sym : nil, md[1], (md[2] || '').to_i]
       end

@@ -464,8 +464,8 @@ class TestFileStatistics < Test::Unit::TestCase
 
   def code_info_from_string(str)
     str = str.gsub(/^\s*/,"")
-    [ str.map{|line| line.sub(/^\d+ /, "") },
-      str.map{|line| line[/^\d+/].to_i > 0},
-      str.map{|line| line[/^\d+/].to_i } ]
+    [ str.split("\n").each {|line| line.sub(/^\d+ /, "") },
+      str.split("\n").each {|line| line[/^\d+/].to_i > 0},
+      str.split("\n").each {|line| line[/^\d+/].to_i } ]
   end
 end
