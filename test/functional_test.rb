@@ -23,14 +23,24 @@ $rcov --no-html --gcc --include-file=sample --exclude=rcov sample_05.rb > expect
 
 class TestFunctional < Test::Unit::TestCase
   @@dir = Pathname(__FILE__).expand_path.dirname
+  
+  @@actual_coverage_dir = if RUBY_VERSION =~ /1.9/
+                            'actual_coverage/ruby-1.9'
+                          else
+                            'actual_coverage/ruby-1.8'
+                          end
 
   def strip_variable_sections(str)
     str.sub(/Generated on.+$/, '').sub(/Generated using the.+$/, '')
   end
 
   def cmp(file)
-    content = lambda{|dir| strip_variable_sections(File.read(@@dir+dir+file))}
-
+    if RUBY_VERSION =~ /1.9/
+      content = lambda{|dir| strip_variable_sections(File.read(@@dir+dir+'ruby-1.9'+file))}
+    else
+      content = lambda{|dir| strip_variable_sections(File.read(@@dir+dir+'ruby-1.8'+file))}
+    end
+    
     assert_equal(content["expected_coverage"], content["actual_coverage"])
   end
 
@@ -42,7 +52,7 @@ class TestFunctional < Test::Unit::TestCase
     rcov = @@dir+"../bin/rcov"
     ruby_opts = "-I../lib:../ext/rcovrt"
     with_testdir do
-      `cd #{@@dir}; ruby #{ruby_opts} #{rcov} #{opts} -o actual_coverage #{script} #{opts_tail}`
+      `cd #{@@dir}; ruby #{ruby_opts} #{rcov} #{opts} -o #{@@actual_coverage_dir} #{script} #{opts_tail}`
       yield if block_given?
     end
   end
@@ -58,7 +68,7 @@ class TestFunctional < Test::Unit::TestCase
   def test_text_gcc
     run_rcov("--gcc #{@@selection}",
              "assets/sample_04.rb",
-             "> actual_coverage/gcc-text.out") do
+             "> #{@@actual_coverage_dir}/gcc-text.out") do
       cmp "gcc-text.out"
     end
   end
@@ -66,28 +76,28 @@ class TestFunctional < Test::Unit::TestCase
   def test_diff
     with_testdir { FileUtils.cp "assets/sample_05-old.rb", "assets/sample_05.rb" }
     run_rcov("--no-html --gcc #{@@selection} --save=coverage.info", "assets/sample_05.rb",
-             "> actual_coverage/diff-gcc-original.out") do
+             "> #{@@actual_coverage_dir}/diff-gcc-original.out") do
       cmp "diff-gcc-original.out"
     end
 
     with_testdir { FileUtils.cp "assets/sample_05-new.rb", "assets/sample_05.rb" }
     run_rcov("--no-html -D --gcc #{@@selection}", "assets/sample_05.rb",
-             "> actual_coverage/diff-gcc-diff.out") do
+             "> #{@@actual_coverage_dir}/diff-gcc-diff.out") do
       cmp "diff-gcc-diff.out"
     end
 
     run_rcov("--no-html -D #{@@selection}", "assets/sample_05.rb",
-             "> actual_coverage/diff.out") do
+             "> #{@@actual_coverage_dir}/diff.out") do
       cmp "diff.out"
     end
 
     run_rcov("--no-html --no-color -D #{@@selection}", "assets/sample_05.rb",
-             "> actual_coverage/diff-no-color.out") do
+             "> #{@@actual_coverage_dir}/diff-no-color.out") do
       cmp "diff-no-color.out"
     end
 
     run_rcov("--no-html --gcc #{@@selection}", "assets/sample_05.rb",
-             "> actual_coverage/diff-gcc-all.out") do
+             "> #{@@actual_coverage_dir}/diff-gcc-all.out") do
       cmp "diff-gcc-all.out"
     end
   end

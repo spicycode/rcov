@@ -83,10 +83,11 @@ class FileStatistics
     @name = name
     @lines = lines
     initial_coverage = counts.map { |x|
-      begin
-        return (x.instance_of? String && x.match(/^([1-9][0-9]*)/)) || (x.instance_of? Fixnum && x > 0) 
-      ensure
-        puts "error caught: #{$!.inspect} and #{$!} and #{x.inspect} and #{x.class}"
+      case x
+      when String
+        x[/^\d+/] || '0'
+      when Fixnum
+        x > 0
       end
     }
     @coverage = CoverageInfo.new initial_coverage
@@ -130,6 +131,9 @@ class FileStatistics
   # considered executed if the the next statement was executed.
   def total_coverage
     return 0 if @coverage.size == 0
+    puts "coverage: \n\n"
+    puts coverage.inspect
+    puts "\n\n"
     @coverage.inject(0.0) {|s,a| s + (a ? 1:0) } / @coverage.size
   end
 

@@ -47,9 +47,9 @@ EOF
     line_info, cov_info, count_info = analyzer.data(sample_file)
     assert_equal(lines, line_info)
     assert_equal([true, true, false, false, true, false, true], cov_info)
-    assert_equal([1, 2, 0, 0, 1, 0, 11], count_info) unless PLATFORM =~ /java/
+    assert_equal([1, 2, 0, 0, 1, 0, 11], count_info) unless defined? PLATFORM && PLATFORM =~ /java/
     # JRUBY reports an if x==blah as hitting this type of line once, JRUBY also optimizes this stuff so you'd have to run with --debug to get "extra" information.  MRI hits it twice.
-    assert_equal([1, 1, 0, 0, 1, 0, 11], count_info) if PLATFORM =~ /java/
+    assert_equal([1, 1, 0, 0, 1, 0, 11], count_info) if defined? PLATFORM && PLATFORM =~ /java/
     analyzer.reset
     assert_equal(nil, analyzer.data(sample_file))
     assert_equal([], analyzer.analyzed_files)
@@ -98,14 +98,14 @@ EOF
     sample_file = File.join(File.dirname(__FILE__), "assets/sample_02.rb")
     analyzer.run_hooked{ load sample_file }
     line_info, cov_info, count_info = analyzer.data(sample_file)
-    assert_equal([8, 1, 0, 0, 0], count_info) unless RUBY_VERSION =~ /1.9/
+    assert_equal([8, 1, 0, 0, 0], count_info) if RUBY_VERSION =~ /1.8/
     assert_equal([4, 1, 0, 0, 4], count_info) if RUBY_VERSION =~ /1.9/
 
     analyzer.reset
     assert_equal([], analyzer.analyzed_files)
     analyzer.run_hooked{ Rcov::Test::Temporary::Sample02.foo(1, 1) }
     line_info, cov_info, count_info = analyzer.data(sample_file)
-    assert_equal([0, 1, 1, 1, 0], count_info) unless RUBY_VERSION =~ /1.9/
+    assert_equal([0, 1, 1, 1, 0], count_info) if RUBY_VERSION =~ /1.8/
     assert_equal([0, 2, 1, 0, 0], count_info) if RUBY_VERSION =~ /1.9/
     
     
@@ -113,10 +113,12 @@ EOF
       10.times{ Rcov::Test::Temporary::Sample02.foo(1, 1) }
     end
     line_info, cov_info, count_info = analyzer.data(sample_file)
-    assert_equal([0, 11, 11, 11, 0], count_info)
+    assert_equal([0, 11, 11, 11, 0], count_info) if RUBY_VERSION =~ /1.8/
+    assert_equal([0, 22, 11, 0, 0], count_info) if RUBY_VERSION =~ /1.9/
     10.times{ analyzer.run_hooked{ Rcov::Test::Temporary::Sample02.foo(1, 1) } }
     line_info, cov_info, count_info = analyzer.data(sample_file)
-    assert_equal([0, 21, 21, 21, 0], count_info)
+    assert_equal([0, 21, 21, 21, 0], count_info) if RUBY_VERSION =~ /1.8/
+    assert_equal([0, 42, 21, 0, 0], count_info) if RUBY_VERSION =~ /1.9/
 
     count_info2 = nil
     10.times do |i|
@@ -126,8 +128,10 @@ EOF
         line_info2, cov_info2, count_info2 = analyzer.data(sample_file)
       end
     end
-    assert_equal([0, 25, 25, 25, 0], count_info)
-    assert_equal([0, 31, 31, 31, 0], count_info2)
+    assert_equal([0, 25, 25, 25, 0], count_info) if RUBY_VERSION =~ /1.8/
+    assert_equal([0, 50, 25, 0, 0], count_info) if RUBY_VERSION =~ /1.9/
+    assert_equal([0, 31, 31, 31, 0], count_info2) if RUBY_VERSION =~ /1.8/
+    assert_equal([0, 62, 31, 0, 0], count_info2) if RUBY_VERSION =~ /1.9/
   end
 
   def test_nested_analyzer_blocks
@@ -160,8 +164,10 @@ EOF
 
     _, _, counts1 = a1.data(sample_file)
     _, _, counts2 = a2.data(sample_file)
-    assert_equal([0, 221, 221, 221, 0], counts1)
-    assert_equal([0, 121, 121, 121, 0], counts2)
+    assert_equal([0, 221, 221, 221, 0], counts1) if RUBY_VERSION =~ /1.8/
+    assert_equal([0, 442, 221, 0, 0], counts1) if RUBY_VERSION =~ /1.9/
+    assert_equal([0, 121, 121, 121, 0], counts2) if RUBY_VERSION =~ /1.8/
+    assert_equal([0, 242, 121, 0, 0], counts2) if RUBY_VERSION =~ /1.9/
   end
 
   def test_reset
@@ -177,7 +183,8 @@ EOF
       end
     end
 
-    assert_equal([0, 50, 50, 50, 0], a1.data(sample_file)[2])
+    assert_equal([0, 50, 50, 50, 0], a1.data(sample_file)[2]) if RUBY_VERSION =~ /1.8/
+    assert_equal([0, 100, 50, 0, 0], a1.data(sample_file)[2]) if RUBY_VERSION =~ /1.9/
   end
 
   def test_compute_raw_difference

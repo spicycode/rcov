@@ -76,6 +76,9 @@ class TestFileStatistics < Test::Unit::TestCase
       3 c.times{ i += 1}
     EOF
     sf = Rcov::FileStatistics.new("metrics", lines, counts)
+    puts "\n\n"
+    puts sf.inspect
+    puts "\nand #{sf.total_coverage}\n"
     assert_in_delta(0.307, sf.total_coverage, 0.01)
     assert_in_delta(0.375, sf.code_coverage, 0.01)
     assert_equal(8, sf.num_code_lines)
