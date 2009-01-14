@@ -19,7 +19,7 @@ class TestCallSiteAnalyzer < Test::Unit::TestCase
       s[Rcov::CallSiteAnalyzer::CallSite.new(backtrace)] = count
       s
     end
-    
+
     act_callsites = actual.inject({}) do |s, (key, value)|
       #wow thats obtuse.  In a callsite we have an array of arrays.  We have to deep copy them because
       # if we muck with the actual backtrace it messes things up for accumulation type tests.

@@ -9,8 +9,8 @@ module Rcov; module Test; module Temporary; class Sample03
   def f3
     10.times{ f1 }
     100.times{ f2 }
-  end                   
-  
+  end
+
   def self.g1
     10.times{ g2 }
   end

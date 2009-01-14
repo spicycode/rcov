@@ -139,50 +139,50 @@ if RUBY_PLATFORM == 'java'
   spec.platform = "jruby"
   spec.extensions = []
   #add the jruby extension to the file list
-  PKG_FILES << "lib/rcovrt.jar"  
-  
+  PKG_FILES << "lib/rcovrt.jar"
+
   def java_classpath_arg
     begin
       require 'java'
       classpath = java.lang.System.getProperty('java.class.path')
     rescue LoadError
     end
-  
+
     if classpath.empty?
       classpath = FileList["#{ENV['JRUBY_HOME']}/lib/*.jar"].join(File::PATH_SEPARATOR)
     end
-  
+
     classpath ? "-cp #{classpath}" : ""
   end
-  
-  
+
+
   CLEAN.include ["ext/java/classes", "lib/rcovrt.jar", "pkg"]
-  
+
   def compile_java
     mkdir_p "ext/java/classes"
     sh "javac -g -target 1.5 -source 1.5 -d ext/java/classes #{java_classpath_arg} #{FileList['ext/java/src/**/*.java'].join(' ')}"
   end
-  
+
   def make_jar
     require 'fileutils'
     lib = File.join(File.dirname(__FILE__), 'lib')
     FileUtils.mkdir(lib) unless File.exists? lib
-    sh "jar cf lib/rcovrt.jar -C ext/java/classes/ ." 
+    sh "jar cf lib/rcovrt.jar -C ext/java/classes/ ."
   end
-  
+
   file 'lib/rcovrt.jar' => FileList["ext/java/src/*.java"] do
     compile_java
     make_jar
   end
-  
+
   desc "compile the java extension and put it into the lib directory"
   task :java_compile => ["lib/rcovrt.jar"]
-  
+
 end
 
 Rake::GemPackageTask.new(spec) do |p|
   p.need_tar = true
-  p.gem_spec = spec  
+  p.gem_spec = spec
 end
 
 #extend the gem task to include the java_compile

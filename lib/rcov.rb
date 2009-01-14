@@ -14,7 +14,7 @@
 SCRIPT_LINES__ = {} unless defined? SCRIPT_LINES__
 
 module Rcov
-    
+
 # Rcov::CoverageInfo is but a wrapper for an array, with some additional
 # checks. It is returned by FileStatistics#coverage.
 class CoverageInfo
@@ -26,7 +26,7 @@ class CoverageInfo
 # return values:
 # * nil if there's no information for the requested line (i.e. it doesn't exist)
 # * true if the line was reported by Ruby as executed
-# * :inferred if rcov inferred it was executed, despite not being reported 
+# * :inferred if rcov inferred it was executed, despite not being reported
 #   by Ruby.
 # * false otherwise, i.e. if it was not reported by Ruby and rcov's
 #   heuristics indicated that it was not executed
@@ -36,7 +36,7 @@ class CoverageInfo
 
   def []=(line, val) # :nodoc:
     unless [true, false, :inferred].include? val
-      raise RuntimeError, "What does #{val} mean?" 
+      raise RuntimeError, "What does #{val} mean?"
     end
     return if line < 0 || line >= @cover.size
     @cover[line] = val
@@ -67,14 +67,14 @@ end
 # refine the initial (incomplete) coverage information.
 #
 # Basic usage is as follows:
-#  sf = FileStatistics.new("foo.rb", ["puts 1", "if true &&", "   false", 
+#  sf = FileStatistics.new("foo.rb", ["puts 1", "if true &&", "   false",
 #                                 "puts 2", "end"],  [1, 1, 0, 0, 0])
 #  sf.num_lines        # => 5
 #  sf.num_code_lines   # => 5
 #  sf.coverage[2]      # => true
 #  sf.coverage[3]      # => :inferred
 #  sf.code_coverage    # => 0.6
-#                    
+#
 # The array of strings representing the source code and the array of execution
 # counts would normally be obtained from a Rcov::CodeCoverageAnalyzer.
 class FileStatistics
@@ -104,20 +104,20 @@ class FileStatistics
 
   # Merge code coverage and execution count information.
   # As for code coverage, a line will be considered
-  # * covered for sure (true) if it is covered in either +self+ or in the 
+  # * covered for sure (true) if it is covered in either +self+ or in the
   #   +coverage+ array
   # * considered <tt>:inferred</tt> if the neither +self+ nor the +coverage+ array
   #   indicate that it was definitely executed, but it was <tt>inferred</tt>
-  #   in either one 
+  #   in either one
   # * not covered (<tt>false</tt>) if it was uncovered in both
   #
   # Execution counts are just summated on a per-line basis.
   def merge(lines, coverage, counts)
     coverage.each_with_index do |v, idx|
       case @coverage[idx]
-      when :inferred 
+      when :inferred
         @coverage[idx] = v || @coverage[idx]
-      when false 
+      when false
         @coverage[idx] ||= v
       end
     end
@@ -146,7 +146,7 @@ class FileStatistics
     indices.each {|i| count += 1 if @coverage[i] }
     1.0 * count / indices.size
   end
-  
+
   # Number of lines of code (loc).
   def num_code_lines
     (0...@lines.size).select{|i| is_code? i}.size
@@ -181,8 +181,8 @@ class FileStatistics
         end
       end
     end
-    @lines[lineno] && !@is_begin_comment[lineno] && 
-      @lines[lineno] !~ /^\s*(#|$)/ 
+    @lines[lineno] && !@is_begin_comment[lineno] &&
+      @lines[lineno] !~ /^\s*(#|$)/
   end
 
   private
@@ -192,7 +192,7 @@ class FileStatistics
     wanted_delimiter = nil
     string_begin_line = 0
     @lines.each_with_index do |line, i|
-      matching_delimiters = Hash.new{|h,k| k} 
+      matching_delimiters = Hash.new{|h,k| k}
       matching_delimiters.update("{" => "}", "[" => "]", "(" => ")")
       case state
       when :awaiting_string
@@ -237,7 +237,7 @@ class FileStatistics
         /^\s*rescue\b/ =~ line && next_expr_marked?(i) or
         /(do|\{)\s*(\|[^|]*\|\s*)?(?:#.*)?$/ =~ line && next_expr_marked?(i) or
         prev_expr_continued?(i) && prev_expr_marked?(i) or
-        comments_run_by_default && !is_code?(i) or 
+        comments_run_by_default && !is_code?(i) or
         /^\s*((\)|\]|\})\s*)+(?:#.*)?$/ =~ line && prev_expr_marked?(i) or
         prev_expr_continued?(i+1) && next_expr_marked?(i)
         @coverage[i] ||= :inferred
@@ -246,7 +246,7 @@ class FileStatistics
     end
     (@lines.size-1).downto(0) do |i|
       next if @coverage[i]
-      if !is_code?(i) and @coverage[i+1] 
+      if !is_code?(i) and @coverage[i+1]
         @coverage[i] = :inferred
         changed = true
       end
@@ -274,7 +274,7 @@ class FileStatistics
       scanner = StringScanner.new(@lines[i])
       j = k = i
       loop do
-        scanned_text = scanner.search_full(/<<(-?)(?:(['"`])((?:(?!\2).)+)\2|([A-Z_a-z]\w*))/, 
+        scanned_text = scanner.search_full(/<<(-?)(?:(['"`])((?:(?!\2).)+)\2|([A-Z_a-z]\w*))/,
                                            true, true)
         # k is the first line after the end delimiter for the last heredoc
         # scanned so far
@@ -291,7 +291,7 @@ class FileStatistics
           break
         end
         must_mark = []
-        end_of_heredoc = (scanner[1] == "-") ? 
+        end_of_heredoc = (scanner[1] == "-") ?
                /^\s*#{Regexp.escape(term)}$/ : /^#{Regexp.escape(term)}$/
         loop do
           break if j == @lines.size
@@ -344,7 +344,7 @@ class FileStatistics
     return false if lineno <= 0
     return false if lineno >= @lines.size
     found = false
-    if @multiline_string_start[lineno] && 
+    if @multiline_string_start[lineno] &&
       @multiline_string_start[lineno] < lineno
       return true
     end
@@ -352,7 +352,7 @@ class FileStatistics
     idx = (lineno-1).downto(0) do |i|
       if @heredoc_start[i]
         found = true
-        break @heredoc_start[i] 
+        break @heredoc_start[i]
       end
       next unless is_code? i
       found = true
@@ -368,7 +368,7 @@ class FileStatistics
     r = /(,|\.|\+|-|\*|\/|<|>|%|&&|\|\||<<|\(|\[|\{|=|and|or|\\)\s*(?:#(?![{$@]).*)?$/.match @lines[idx]
     # try to see if a multi-line expression with opening, closing delimiters
     # started on that line
-    [%w!( )!].each do |opening_str, closing_str| 
+    [%w!( )!].each do |opening_str, closing_str|
       # conservative: only consider nesting levels opened in that line, not
       # previous ones too.
       # next regexp considers interpolation too
@@ -426,14 +426,14 @@ class DifferentialAnalyzer
   # #remove_hook will also stop collecting info if it is run inside a
   # #run_hooked block.
   def remove_hook
-    @@mutex.synchronize do 
+    @@mutex.synchronize do
       self.class.hook_level -= 1
       Rcov::RCOV__.send(@remove_hook_meth) if self.class.hook_level == 0
     end
     @end_raw_data = raw_data_absolute
     @cache_state = :done
     # force computation of the stats for the traced code in this run;
-    # we cannot simply let it be if self.class.hook_level == 0 because 
+    # we cannot simply let it be if self.class.hook_level == 0 because
     # some other analyzer could install a hook, causing the raw_data_absolute
     # to change again.
     # TODO: lazy computation of raw_data_relative, only when the hook gets
@@ -465,7 +465,7 @@ class DifferentialAnalyzer
   def data_default
     raise "must be implemented by the subclass"
   end
-    
+
   def self.hook_level
     raise "must be implemented by the subclass"
   end
@@ -493,7 +493,7 @@ class DifferentialAnalyzer
       @start_raw_data = new_start
     when :done
       @cache_state = :wait
-      new_diff = compute_raw_data_difference(@start_raw_data, 
+      new_diff = compute_raw_data_difference(@start_raw_data,
                                              @end_raw_data)
     end
 
@@ -501,7 +501,7 @@ class DifferentialAnalyzer
 
     @aggregated_data
   end
-  
+
 end
 
 # A CodeCoverageAnalyzer is responsible for tracing code execution and
@@ -518,13 +518,13 @@ end
 # == Example
 #
 #  analyzer = Rcov::CodeCoverageAnalyzer.new
-#  analyzer.run_hooked do 
-#    do_foo  
+#  analyzer.run_hooked do
+#    do_foo
 #    # all the code executed as a result of this method call is traced
 #  end
 #  # ....
-#  
-#  analyzer.run_hooked do 
+#
+#  analyzer.run_hooked do
 #    do_bar
 #    # the code coverage information generated in this run is aggregated
 #    # to the previously recorded one
@@ -534,7 +534,7 @@ end
 #  lines, marked_info, count_info = analyzer.data("foo.rb")
 #
 # In this example, two pieces of code are monitored, and the data generated in
-# both runs are aggregated. +lines+ is an array of strings representing the 
+# both runs are aggregated. +lines+ is an array of strings representing the
 # source code of <tt>foo.rb</tt>. +marked_info+ is an array holding false,
 # true values indicating whether the corresponding lines of code were reported
 # as executed by Ruby. +count_info+ is an array of integers representing how
@@ -554,18 +554,18 @@ class CodeCoverageAnalyzer < DifferentialAnalyzer
   @hook_level = 0
   # defined this way instead of attr_accessor so that it's covered
   def self.hook_level      # :nodoc:
-    @hook_level 
-  end   
-  def self.hook_level=(x)  # :nodoc: 
-    @hook_level = x 
-  end 
+    @hook_level
+  end
+  def self.hook_level=(x)  # :nodoc:
+    @hook_level = x
+  end
 
   def initialize
     @script_lines__ = SCRIPT_LINES__
     super(:install_coverage_hook, :remove_coverage_hook,
           :reset_coverage)
   end
-  
+
   # Return an array with the names of the files whose code was executed inside
   # the block given to #run_hooked or between #install_hook and #remove_hook.
   def analyzed_files
@@ -579,7 +579,7 @@ class CodeCoverageAnalyzer < DifferentialAnalyzer
   # code was executed or it cannot be found.
   # The return value is an array with three elements:
   #  lines, marked_info, count_info = analyzer.data("foo.rb")
-  # +lines+ is an array of strings representing the 
+  # +lines+ is an array of strings representing the
   # source code of <tt>foo.rb</tt>. +marked_info+ is an array holding false,
   # true values indicating whether the corresponding lines of code were reported
   # as executed by Ruby. +count_info+ is an array of integers representing how
@@ -593,9 +593,9 @@ class CodeCoverageAnalyzer < DifferentialAnalyzer
   def data(filename)
     raw_data = raw_data_relative
     update_script_lines__
-    unless @script_lines__.has_key?(filename) && 
+    unless @script_lines__.has_key?(filename) &&
            raw_data.has_key?(filename)
-      return nil 
+      return nil
     end
     refine_coverage_info(@script_lines__[filename], raw_data[filename])
   end
@@ -641,7 +641,7 @@ class CodeCoverageAnalyzer < DifferentialAnalyzer
       lines = @script_lines__[file]
       raw_coverage_array = raw_data_relative[file]
 
-      line_info, marked_info, 
+      line_info, marked_info,
         count_info = refine_coverage_info(lines, raw_coverage_array)
       formatters.each do |formatter|
         formatter.add_file(file, line_info, marked_info, count_info)
@@ -706,7 +706,7 @@ class CodeCoverageAnalyzer < DifferentialAnalyzer
       break false unless line_info.size % div == 0 && n > 1
       different = false
       n.times do |i|
-        
+
         things = (0...div).map { |j| line_info[i + j * n] }
         if things.uniq.size != 1
           different = true
@@ -725,7 +725,7 @@ class CodeCoverageAnalyzer < DifferentialAnalyzer
         count_info = count_info[0, count_info.size / n]
       end
     end if factors.size > 1   # don't even try if it's prime
-    
+
     [line_info, coverage_info, count_info]
   end
 
@@ -785,12 +785,12 @@ end # CodeCoverageAnalyzer
 #
 #  analyzer = Rcov::CallSiteAnalyzer.new
 #  x = X.new
-#  analyzer.run_hooked do 
-#    x.f1 
+#  analyzer.run_hooked do
+#    x.f1
 #  end
 #  # ....
-#  
-#  analyzer.run_hooked do 
+#
+#  analyzer.run_hooked do
 #    x.f3
 #    # the information generated in this run is aggregated
 #    # to the previously recorded one
@@ -809,7 +809,7 @@ end # CodeCoverageAnalyzer
 # possible to nest the #run_hooked / #install_hook/#remove_hook blocks: each
 # analyzer will manage its data separately. Note however that no special
 # provision is taken to ignore code executed "inside" the CallSiteAnalyzer
-# class. 
+# class.
 #
 # +defsite+ information is only available for methods that were called under
 # the inspection of the CallSiteAnalyzer, i.o.w. you will only have +defsite+
@@ -819,17 +819,17 @@ class CallSiteAnalyzer < DifferentialAnalyzer
   # A method definition site.
   class DefSite < Struct.new(:file, :line)
   end
-  
+
   # Object representing a method call site.
   # It corresponds to a part of the callstack starting from the context that
-  # called the method.   
+  # called the method.
   class CallSite < Struct.new(:backtrace)
     # The depth of a CallSite is the number of stack frames
     # whose information is included in the CallSite object.
     def depth
       backtrace.size
     end
-    
+
     # File where the method call originated.
     # Might return +nil+ or "" if it is not meaningful (C extensions, etc).
     def file(level = 0)
@@ -863,11 +863,11 @@ class CallSiteAnalyzer < DifferentialAnalyzer
   @hook_level = 0
   # defined this way instead of attr_accessor so that it's covered
   def self.hook_level      # :nodoc:
-    @hook_level 
-  end   
-  def self.hook_level=(x)  # :nodoc: 
-    @hook_level = x 
-  end 
+    @hook_level
+  end
+  def self.hook_level=(x)  # :nodoc:
+    @hook_level = x
+  end
 
   def initialize
     super(:install_callsite_hook, :remove_callsite_hook,
@@ -945,21 +945,21 @@ class CallSiteAnalyzer < DifferentialAnalyzer
     ret1 = {}
     ret2 = {}
     raw.each_pair do |(klass, method), hash|
-      begin  
+      begin
         key = [klass.to_s, method.to_s]
         ret1[key] = hash.clone #Marshal.load(Marshal.dump(hash))
         ret2[key] = method_def_site[[klass, method]]
       #rescue Exception
       end
     end
-    
+
     [ret1, ret2]
   end
 
   def aggregate_data(aggregated_data, delta)
     callsites1, defsites1 = aggregated_data
     callsites2, defsites2 = delta
-    
+
     callsites2.each_pair do |(klass, method), hash|
       dest_hash = (callsites1[[klass, method]] ||= {})
       hash.each_pair do |callsite, count|
@@ -977,7 +977,7 @@ class CallSiteAnalyzer < DifferentialAnalyzer
 
     callsites1, defsites1 = *first
     callsites2, defsites2 = *last
-    
+
     callsites2.each_pair do |(klass, method), hash|
       old_hash = callsites1[[klass, method]] || default
       hash.each_pair do |callsite, count|
@@ -988,7 +988,7 @@ class CallSiteAnalyzer < DifferentialAnalyzer
         end
       end
     end
-    
+
     [difference, defsites1.update(defsites2)]
   end
 

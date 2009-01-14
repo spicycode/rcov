@@ -93,7 +93,7 @@ EOF
     assert_equal([1, 1, 0, 0, 1, 0, 11], count_info) if (defined? PLATFORM && PLATFORM =~ /java/) || RUBY_VERSION =~ /1.9/
 
     analyzer.reset
-    #set_trace_func proc { |event, file, line, id, binding, classname| printf "%8s %s:%-2d %10s %8s\n", event, file, line, id, classname if (file =~ /sample_02.rb/) }     
+    #set_trace_func proc { |event, file, line, id, binding, classname| printf "%8s %s:%-2d %10s %8s\n", event, file, line, id, classname if (file =~ /sample_02.rb/) }
 
     sample_file = File.join(File.dirname(__FILE__), "assets/sample_02.rb")
     analyzer.run_hooked{ load sample_file }
@@ -107,8 +107,8 @@ EOF
     line_info, cov_info, count_info = analyzer.data(sample_file)
     assert_equal([0, 1, 1, 1, 0], count_info) if RUBY_VERSION =~ /1.8/
     assert_equal([0, 2, 1, 0, 0], count_info) if RUBY_VERSION =~ /1.9/
-    
-    
+
+
     analyzer.run_hooked do
       10.times{ Rcov::Test::Temporary::Sample02.foo(1, 1) }
     end
@@ -175,7 +175,7 @@ EOF
 
     sample_file = File.join(File.dirname(__FILE__), "assets/sample_02.rb")
     load sample_file
-    
+
     a1.run_hooked do
       100.times do |i|
         Rcov::Test::Temporary::Sample02.foo(1, 1)

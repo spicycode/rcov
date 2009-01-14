@@ -85,11 +85,11 @@ class Formatter # :nodoc:
         /\btest\//,
         /\bvendor\//,
         /\A#{Regexp.escape(__FILE__)}\z/]
-        
+
     DEFAULT_OPTS = {:ignore => ignore_files, :sort => :name, :sort_reverse => false,
                     :output_threshold => 101, :dont_ignore => [],
                     :callsite_analyzer => nil, :comments_run_by_default => false}
-                    
+
     def initialize(opts = {})
         options = DEFAULT_OPTS.clone.update(opts)
         @files = {}
@@ -718,7 +718,7 @@ EOS
       return if @files.empty?
       FileUtils.mkdir_p @dest
       create_index(File.join(@dest, "index.html"))
-      
+
       each_file_pair_sorted do |filename, fileinfo|
         create_file(File.join(@dest, mangle_filename(filename)), fileinfo)
       end
@@ -813,29 +813,29 @@ EOS
     end
 
     class SummaryFileInfo  # :nodoc:
-        
+
       def initialize(obj)
-        @o = obj 
+        @o = obj
       end
-      
+
       def num_lines
         @o.num_lines
       end
-      
+
       def num_code_lines
         @o.num_code_lines
       end
-      
+
       def code_coverage
         @o.code_coverage
       end
-      
+
       def total_coverage
         @o.total_coverage
       end
-      
+
       def name
-        "TOTAL" 
+        "TOTAL"
       end
 
     end
@@ -1150,7 +1150,7 @@ class HTMLProfiling < HTMLCoverage # :nodoc:
             nil
         end
     end
-    
+
 end
 
 class RubyAnnotation < Formatter # :nodoc:

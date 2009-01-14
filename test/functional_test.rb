@@ -23,7 +23,7 @@ $rcov --no-html --gcc --include-file=sample --exclude=rcov sample_05.rb > expect
 
 class TestFunctional < Test::Unit::TestCase
   @@dir = Pathname(__FILE__).expand_path.dirname
-  
+
   @@actual_coverage_dir = if RUBY_VERSION =~ /1.9/
                             'actual_coverage/ruby-1.9'
                           else
@@ -40,7 +40,7 @@ class TestFunctional < Test::Unit::TestCase
     else
       content = lambda{|dir| strip_variable_sections(File.read(@@dir+dir+'ruby-1.8'+file))}
     end
-    
+
     assert_equal(content["expected_coverage"], content["actual_coverage"])
   end
 

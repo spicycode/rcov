@@ -51,7 +51,7 @@ module Rant          # :nodoc:
         if @libs && !@libs.empty?
           args << "-I#{@libs.join File::PATH_SEPARATOR}"
         end
-        if rcov_path = ENV['RCOVPATH'] 
+        if rcov_path = ENV['RCOVPATH']
           args << rcov_path
         else
           args << "-S" << "rcov"
@@ -59,7 +59,7 @@ module Rant          # :nodoc:
         args.concat rcov_opts
         args << "-o" << @output_dir
         if test(?d, "test")
-          @test_dirs << "test" 
+          @test_dirs << "test"
         elsif test(?d, "tests")
           @test_dirs << "tests"
         end
@@ -67,7 +67,7 @@ module Rant          # :nodoc:
         app.context.sys.ruby args
       }
     end
-    
+
     def filelist
       return @rac.sys[@rac.var['TEST']] if @rac.var['TEST']
       filelist = @test_files || []

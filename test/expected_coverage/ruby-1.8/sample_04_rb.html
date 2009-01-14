@@ -134,7 +134,7 @@ table.report tr.dark {
       return false;
 
     elemStyle = elem.style;
-    
+
     if ( elemStyle.display != "block" ) {
       elemStyle.display = "block"
     } else {
@@ -143,7 +143,7 @@ table.report tr.dark {
 
     return true;
   }
-  
+
   // Make cross-references hidden by default
   document.writeln( "<style type=\"text/css\">span.cross-ref { display: none }</style>" )
   // ]]>
@@ -563,7 +563,7 @@ span.run100 {
 </span><span class='inferred0'>Lines considered as run by rcov, but not reported by Ruby, look like this,
 </span><span class='inferred1'>and this: these lines were inferred by rcov (using simple heuristics).
 </span><span class='uncovered0'>Finally, here&apos;s a line marked as not executed.
-</span></pre>                       
+</span></pre>
     <table class='report'>
       <thead>
         <tr>
@@ -621,7 +621,7 @@ span.run100 {
       </tbody>
     </table><pre><span class="marked1"><a name="line1"></a> 1 $: &lt;&lt; File.dirname(__FILE__)
 </span><span class="marked0"><a name="line2"></a> 2 require 'sample_03'
-</span><span class="inferred1"><a name="line3"></a> 3 
+</span><span class="inferred1"><a name="line3"></a> 3
 </span><span class="marked0"><a name="line4"></a> 4 klass = Rcov::Test::Temporary::Sample03
 </span><span class="marked1"><a name="line5"></a> 5 obj = klass.new
 </span><span class="marked0"><a name="line6"></a> 6 obj.f1

@@ -1,7 +1,7 @@
 # xx can be redistributed and used under the following conditions
 # (just keep the following copyright notice, list of conditions and disclaimer
 # in order to satisfy rcov's "Ruby license" and xx's license simultaneously).
-# 
+#
 #ePark Labs Public License version 1
 #Copyright (c) 2005, ePark Labs, Inc. and contributors
 #All rights reserved.
@@ -87,7 +87,7 @@ module XX
 #--}}}
     end
     alias_method "to_s", "to_str"
-    def pretty port = '' 
+    def pretty port = ''
 #--{{{
       @doc.write port, indent=2, transitive=false, ie_hack=true
       port
@@ -174,7 +174,7 @@ module XX
                   x.to_s
               end
 
-          else # other - try anyhow 
+          else # other - try anyhow
             t <<
               case x
                 when ::REXML::Document
@@ -247,7 +247,7 @@ module XX
       end
       def xx_tag_ tag_name, *a, &b
 #--{{{
-        tag_method, tag_name = xx_class::xx_tag_method_name tag_name 
+        tag_method, tag_name = xx_class::xx_tag_method_name tag_name
 
         ret, defined = nil
 
@@ -264,7 +264,7 @@ module XX
 #--}}}
       end
       alias_method "g_", "xx_tag_"
-      def xx_which *argv 
+      def xx_which *argv
 #--{{{
         @xx_which = nil unless defined? @xx_which
         if argv.empty?
@@ -272,7 +272,7 @@ module XX
         else
           xx_which = @xx_which
           begin
-            @xx_which = argv.shift 
+            @xx_which = argv.shift
             return yield
           ensure
             @xx_which = xx_which
@@ -292,7 +292,7 @@ module XX
           doctype = xx_config_for "doctype", xx_which
           if doctype
             unless ddoc.doctype
-              doctype = ::REXML::DocType::new doctype unless 
+              doctype = ::REXML::DocType::new doctype unless
                 ::REXML::DocType === doctype
               ddoc << doctype
             end
@@ -323,11 +323,11 @@ module XX
         doc = xx_doc
 
         text =
-          ::REXML::Text::new("", 
+          ::REXML::Text::new("",
             respect_whitespace=true, parent=nil
           )
 
-        objects.each do |object| 
+        objects.each do |object|
           text << object.to_s if object
         end
 
@@ -342,7 +342,7 @@ module XX
 
         doc2 = ::REXML::Document::new ""
 
-        objects.each do |object| 
+        objects.each do |object|
           (doc2.root ? doc2.root : doc2) << ::REXML::Document::new(object.to_s)
         end
 
@@ -360,11 +360,11 @@ module XX
         nothing = %r/.^/m
 
         text =
-          ::REXML::Text::new("", 
+          ::REXML::Text::new("",
             respect_whitespace=true, parent=nil, raw=true, entity_filter=nil, illegal=nothing
           )
 
-        objects.each do |object| 
+        objects.each do |object|
           text << object.to_s if object
         end
 
@@ -380,7 +380,7 @@ module XX
 
         cdata = ::REXML::CData::new ""
 
-        objects.each do |object| 
+        objects.each do |object|
           cdata << object.to_s if object
         end
 
@@ -415,22 +415,22 @@ module XX
         @xx_class ||= self.class
 #--}}}
       end
-      def xx_tag_method_name *a, &b 
+      def xx_tag_method_name *a, &b
 #--{{{
         xx_class.xx_tag_method_name(*a, &b)
 #--}}}
       end
-      def xx_define_tmp_method *a, &b 
+      def xx_define_tmp_method *a, &b
 #--{{{
         xx_class.xx_define_tmp_methodr(*a, &b)
 #--}}}
       end
-      def xx_define_tag_method *a, &b 
+      def xx_define_tag_method *a, &b
 #--{{{
         xx_class.xx_define_tag_method(*a, &b)
 #--}}}
       end
-      def xx_remove_tag_method *a, &b 
+      def xx_remove_tag_method *a, &b
 #--{{{
         xx_class.xx_tag_remove_method(*a, &b)
 #--}}}
@@ -468,7 +468,7 @@ module XX
         [ tag_method, tag_name ]
 #--}}}
       end
-      def xx_define_tmp_method m 
+      def xx_define_tmp_method m
 #--{{{
         define_method(m){ raise NotImplementedError, m.to_s }
 #--}}}
@@ -517,9 +517,9 @@ module XX
         @@xx_config ||= Hash::new{|h,k| h[k] = {}}
 #--}}}
       end
-      def xx_config_for key, xx_which = nil 
+      def xx_config_for key, xx_which = nil
 #--{{{
-        key = key.to_s 
+        key = key.to_s
         xx_which ||= self
         xx_ancestors(xx_which).each do |a|
           if xx_config[a].has_key? key
@@ -529,7 +529,7 @@ module XX
         nil
 #--}}}
       end
-      def xx_configure key, value, xx_which = nil 
+      def xx_configure key, value, xx_which = nil
 #--{{{
         key = key.to_s
         xx_which ||= self
@@ -575,7 +575,7 @@ module XX
         doc = xx_with_doc_in_effect(*a, &b)
         ddoc = doc.doc
         root = ddoc.root
-        if root and root.name and root.name =~ %r/^html$/i 
+        if root and root.name and root.name =~ %r/^html$/i
           if root.attribute("lang",nil).nil? or root.attribute("lang",nil).to_s.empty?
             root.add_attribute "lang", "en"
           end
@@ -632,7 +632,7 @@ module XX
 #--{{{
     include Markup
     xx_configure "doctype", %(html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN")
- 
+
     def html4_ which = HTML4, *a, &b
 #--{{{
       xx_which(which){ xx_with_doc_in_effect(*a, &b) }
@@ -714,7 +714,7 @@ if __FILE__ == $0
     include XX::HTML4::Strict
     include XX::XML
 
-    def doc 
+    def doc
       html_{
         head_{ title_{ "xhtml/html4/xml demo" } }
 
@@ -726,7 +726,7 @@ if __FILE__ == $0
 
         x_{ "<any_valid> xml </any_valid>" }
 
-        div_(:style => :sweet){ 
+        div_(:style => :sweet){
           em_ "this is a table"
 
           table_(:width => 42, :height => 42){
@@ -749,7 +749,7 @@ if __FILE__ == $0
   end
 
   table = Table[ %w( 0 1 2 ), %w( a b c ) ]
-  
+
   methods = %w( to_xhtml to_html4 to_xml )
 
   methods.each do |method|

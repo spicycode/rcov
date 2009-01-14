@@ -20,7 +20,7 @@ module RCOV__
   CALLSITES = {}
   DEFSITES = {}
   pure_ruby_impl_needed = true
-  unless defined? $rcov_do_not_use_rcovrt 
+  unless defined? $rcov_do_not_use_rcovrt
     begin
       require 'rcovrt'
       abi = [0,0,0]
@@ -52,26 +52,26 @@ One Click Installer and mswin32 builds) at http://eigenclass.org/hiki.rb?rcov .
   end
 
   if pure_ruby_impl_needed
-    methods = %w[install_coverage_hook remove_coverage_hook reset_coverage 
-                 install_callsite_hook remove_callsite_hook reset_callsite 
+    methods = %w[install_coverage_hook remove_coverage_hook reset_coverage
+                 install_callsite_hook remove_callsite_hook reset_callsite
                  generate_coverage_info generate_callsite_info]
     sklass = class << self; self end
     (methods & sklass.instance_methods).each do |meth|
       sklass.class_eval{ remove_method meth }
     end
-    
+
     @coverage_hook_activated = @callsite_hook_activated = false
 
     def self.install_coverage_hook # :nodoc:
       install_common_hook
       @coverage_hook_activated = true
     end
-    
+
     def self.install_callsite_hook # :nodoc:
       install_common_hook
       @callsite_hook_activated = true
     end
-    
+
     def self.install_common_hook # :nodoc:
       set_trace_func lambda {|event, file, line, id, binding, klass|
         next unless SCRIPT_LINES__.has_key? file
@@ -109,7 +109,7 @@ One Click Installer and mswin32 builds) at http://eigenclass.org/hiki.rb?rcov .
       @coverage_hook_activated = false
       set_trace_func(nil) if !@callsite_hook_activated
     end
-    
+
     def self.remove_callsite_hook # :nodoc:
       @callsite_hook_activated = false
       set_trace_func(nil) if !@coverage_hook_activated
