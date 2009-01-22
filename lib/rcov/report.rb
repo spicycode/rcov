@@ -96,8 +96,8 @@ class Formatter # :nodoc:
         @ignore_files = options[:ignore]
         @dont_ignore_files = options[:dont_ignore]
         @sort_criterium = case options[:sort]
-            when :loc : lambda{|fname, finfo| finfo.num_code_lines}
-            when :coverage : lambda{|fname, finfo| finfo.code_coverage}
+            when :loc then lambda{|fname, finfo| finfo.num_code_lines}
+            when :coverage then lambda{|fname, finfo| finfo.code_coverage}
             else lambda{|fname, finfo| fname}
         end
         @sort_reverse = options[:sort_reverse]
@@ -535,7 +535,7 @@ class HTMLCoverage < Formatter # :nodoc:
     require 'fileutils'
     JAVASCRIPT_PROLOG = <<-EOS
 
-// <![CDATA[
+// \<![CDATA[
   function toggleCode( id ) {
     if ( document.getElementById )
       elem = document.getElementById( id );
@@ -556,7 +556,7 @@ class HTMLCoverage < Formatter # :nodoc:
   }
 
   // Make cross-references hidden by default
-  document.writeln( "<style type=\\"text/css\\">span.cross-ref { display: none }</style>" )
+  document.writeln( "\<style type=\\"text/css\\">span.cross-ref { display: none }</style>" )
   // ]]>
     EOS
 
@@ -770,7 +770,7 @@ EOS
                         tr_(:class => color_classes[color_class_index]) {
                             td_ {
                                 case f.name
-                                when "TOTAL":
+                                when "TOTAL" then
                                     t_ { "TOTAL" }
                                 else
                                     a_(:href => mangle_filename(f.name)){ t_ { f.name } }
@@ -883,7 +883,11 @@ EOS
                 end
             }
         } }
-        lines = output.pretty.to_a
+        if String.new.respond_to?(:lines) then
+          lines = output.pretty.lines.to_a
+        else
+          lines = output.pretty.to_a
+        end
         lines.unshift lines.pop if /DOCTYPE/ =~ lines[-1]
         File.open(destname, "w") do |f|
             f.puts lines
@@ -1035,7 +1039,11 @@ EOS
             }
         } }
         # .pretty needed to make sure DOCTYPE is in a separate line
-        lines = output.pretty.to_a
+        if String.new.respond_to?(:lines)
+          lines = output.pretty.lines.to_a
+        else
+          lines = output.pretty.to_a
+        end
         lines.unshift lines.pop if /DOCTYPE/ =~ lines[-1]
         File.open(destfile, "w") do |f|
             f.puts lines

@@ -49,18 +49,19 @@ class TestFunctional < Test::Unit::TestCase
   end
 
   def run_rcov(opts, script="assets/sample_04.rb", opts_tail="")
+    ruby_bin = get_ruby_bin
     rcov = @@dir+"../bin/rcov"
     ruby_opts = "-I../lib:../ext/rcovrt"
     with_testdir do
-      `cd #{@@dir}; ruby #{ruby_opts} #{rcov} #{opts} -o #{@@actual_coverage_dir} #{script} #{opts_tail}`
+      `cd #{@@dir}; #{ruby_bin} #{ruby_opts} #{rcov} #{opts} -o #{@@actual_coverage_dir} #{script} #{opts_tail}`
       yield if block_given?
     end
   end
 
   def test_annotation
     run_rcov("-a") do
-      cmp "../assets/sample_04.rb"
-      cmp "../assets/sample_03.rb"
+      cmp "../../assets/sample_04.rb"
+      cmp "../../assets/sample_03.rb"
     end
   end
 

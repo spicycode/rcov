@@ -1,8 +1,11 @@
-
 #include <ruby.h>
+#ifdef RUBY_19_COMPATIBILITY
+#include <ruby/st.h>
+#else
 #include <env.h>
 #include <node.h>
 #include <st.h>
+#endif
 #include <stdlib.h>
 #include <assert.h>
 
@@ -11,6 +14,10 @@
 #define RCOVRT_VERSION_MAJOR 2
 #define RCOVRT_VERSION_MINOR 0
 #define RCOVRT_VERSION_REV   0
+
+#ifndef RARRAY_LEN
+#define RARRAY_LEN(a) RARRAY(a)->len
+#endif
 
 static VALUE mRcov;
 static VALUE mRCOV__;
@@ -27,13 +34,11 @@ struct cov_array {
 static struct cov_array *cached_array = 0;
 static char *cached_file = 0; 
 
-
 /* 
  *
  * coverage hook and associated functions 
  *
  * */
-
 static struct cov_array *
 coverage_increase_counter_uncached(char *sourcefile, unsigned int sourceline,
                                    char mark_only)
@@ -51,8 +56,8 @@ coverage_increase_counter_uncached(char *sourcefile, unsigned int sourceline,
                   return 0;
           rb_check_type(arr, T_ARRAY);
           carray = calloc(1, sizeof(struct cov_array));
-          carray->ptr = calloc(RARRAY(arr)->len, sizeof(unsigned int));
-          carray->len = RARRAY(arr)->len;
+          carray->ptr = calloc(RARRAY_LEN(arr), sizeof(unsigned int));
+          carray->len = RARRAY_LEN(arr);
           st_insert(coverinfo, (st_data_t)strdup(sourcefile), 
                           (st_data_t) carray);
   } else {
@@ -64,9 +69,9 @@ coverage_increase_counter_uncached(char *sourcefile, unsigned int sourceline,
           if(!carray->ptr[sourceline])
                   carray->ptr[sourceline] = 1;
   } else {
-	  if (carray && carray->len > sourceline) {
+       if (carray && carray->len > sourceline) {
           carray->ptr[sourceline]++;
-	  }
+       }
   }
 
   return carray;
@@ -76,9 +81,9 @@ coverage_increase_counter_uncached(char *sourcefile, unsigned int sourceline,
 static void
 coverage_mark_caller()
 {
-  struct FRAME *frame = ruby_frame;
+/*  struct FRAME *frame = ruby_frame;
   NODE *n;
-
+  
   if (frame->last_func == ID_ALLOCATOR) {
           frame = frame->prev;
   }
@@ -93,7 +98,7 @@ coverage_mark_caller()
                   coverage_increase_counter_uncached(n->nd_file, nd_line(n) - 1, 1);
           }
           break;
-  }
+  } */
 }
 
 
@@ -108,10 +113,14 @@ coverage_increase_counter_cached(char *sourcefile, int sourceline)
  cached_array = coverage_increase_counter_uncached(sourcefile, sourceline, 0);
 }
 
-
 static void
+#ifdef RUBY_19_COMPATIBILITY
+coverage_event_coverage_hook(rb_event_flag_t event, VALUE node, 
+                VALUE self, ID mid, VALUE klass)
+#else
 coverage_event_coverage_hook(rb_event_t event, NODE *node, VALUE self, 
                 ID mid, VALUE klass)
+#endif
 {
  char *sourcefile;
  unsigned int sourceline;
@@ -152,7 +161,18 @@ coverage_event_coverage_hook(rb_event_t event, NODE *node, VALUE self,
          in_hook--;
          return;
  }
+
+#ifdef RUBY_19_COMPATIBILITY 
+ // printf("NODE? %s , %s\n", rb_id2name(rb_frame_this_func()), RSTRING_PTR(rb_inspect(node)));
  
+ sourcefile = rb_sourcefile();
+ sourceline = rb_sourceline();
+ 
+ if (0 == sourceline || 0 == sourcefile) {
+         in_hook--;
+         return;
+ }
+#else
  if(node == NULL) {
          in_hook--;
          return;
@@ -160,6 +180,7 @@ coverage_event_coverage_hook(rb_event_t event, NODE *node, VALUE self,
 
  sourcefile = node->nd_file;
  sourceline = nd_line(node) - 1;
+#endif
 
  coverage_increase_counter_cached(sourcefile, sourceline);
  if(event & RUBY_EVENT_CALL)
@@ -172,15 +193,21 @@ static VALUE
 cov_install_coverage_hook(VALUE self)
 {
   if(!coverage_hook_set_p) {
-	  if(!coverinfo)
-		  coverinfo = st_init_strtable();
+       if(!coverinfo)
+               coverinfo = st_init_strtable();
           coverage_hook_set_p = 1;
           /* TODO: allow C_CALL too, since it's supported already
            * the overhead is around ~30%, tested on typo */
+#ifdef RUBY_19_COMPATIBILITY
+           VALUE holder = 0;
+           rb_add_event_hook(coverage_event_coverage_hook, 
+                        RUBY_EVENT_ALL & ~RUBY_EVENT_C_CALL &
+                        ~RUBY_EVENT_C_RETURN & ~RUBY_EVENT_CLASS, holder);
+#else
           rb_add_event_hook(coverage_event_coverage_hook, 
                        RUBY_EVENT_ALL & ~RUBY_EVENT_C_CALL &
                        ~RUBY_EVENT_C_RETURN & ~RUBY_EVENT_CLASS);
-          
+#endif          
           return Qtrue;
   }
   else
@@ -202,8 +229,7 @@ populate_cover(st_data_t key, st_data_t value, st_data_t cover)
  rkey = rb_str_new2((char*) key);
  rval = rb_ary_new2(carray->len);
  for(i = 0; i < carray->len; i++)
-         RARRAY(rval)->ptr[i] = UINT2NUM(carray->ptr[i]);
- RARRAY(rval)->len = carray->len;
+         rb_ary_push(rval, UINT2NUM(carray->ptr[i]));
 
  rb_hash_aset(rcover, rkey, rval);
  
@@ -244,12 +270,12 @@ cov_generate_coverage_info(VALUE self)
   VALUE cover;
 
   if(rb_const_defined_at(mRCOV__, id_cover)) {
-	  rb_mod_remove_const(mRCOV__, ID2SYM(id_cover));
+       rb_mod_remove_const(mRCOV__, ID2SYM(id_cover));
   }
 
   cover = rb_hash_new();
   if(coverinfo)
-	  st_foreach(coverinfo, populate_cover, cover);
+       st_foreach(coverinfo, populate_cover, cover);
   rb_define_const(mRCOV__, "COVER", cover);
 
   return cover;
@@ -260,9 +286,9 @@ static VALUE
 cov_reset_coverage(VALUE self)
 {
   if(coverage_hook_set_p) {
-	  rb_raise(rb_eRuntimeError, 
-		  "Cannot reset the coverage info in the middle of a traced run.");
-	  return Qnil;
+       rb_raise(rb_eRuntimeError, 
+               "Cannot reset the coverage info in the middle of a traced run.");
+       return Qnil;
   }
 
   cached_array = 0;
@@ -297,35 +323,35 @@ Init_rcovrt()
  ID id_script_lines__ = rb_intern("SCRIPT_LINES__");
  
  id_cover = rb_intern("COVER");
-
+ 
  if(rb_const_defined(rb_cObject, id_rcov)) 
          mRcov = rb_const_get(rb_cObject, id_rcov);
  else
          mRcov = rb_define_module("Rcov");
-
+ 
  if(rb_const_defined(mRcov, id_coverage__))
          mRCOV__ = rb_const_get_at(mRcov, id_coverage__);
  else
          mRCOV__ = rb_define_module_under(mRcov, "RCOV__");
-
+ 
  if(rb_const_defined(rb_cObject, id_script_lines__))
          oSCRIPT_LINES__ = rb_const_get(rb_cObject, rb_intern("SCRIPT_LINES__"));
  else {
          oSCRIPT_LINES__ = rb_hash_new();
          rb_const_set(rb_cObject, id_script_lines__, oSCRIPT_LINES__);
  }
-
+ 
  coverage_hook_set_p = 0;
-
+ 
  rb_define_singleton_method(mRCOV__, "install_coverage_hook", 
                  cov_install_coverage_hook, 0);
  rb_define_singleton_method(mRCOV__, "remove_coverage_hook", 
                  cov_remove_coverage_hook, 0);
  rb_define_singleton_method(mRCOV__, "generate_coverage_info", 
-		 cov_generate_coverage_info, 0);
+              cov_generate_coverage_info, 0);
  rb_define_singleton_method(mRCOV__, "reset_coverage", cov_reset_coverage, 0);
  rb_define_singleton_method(mRCOV__, "ABI", cov_ABI, 0);
-
+ 
  Init_rcov_callsite();
 }
 /* vim: set sw=8 expandtab: */

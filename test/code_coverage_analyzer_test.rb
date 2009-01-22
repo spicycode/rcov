@@ -88,9 +88,9 @@ EOF
     analyzer = Rcov::CodeCoverageAnalyzer.new
     analyzer.run_hooked{ load sample_file }
     line_info, cov_info, count_info = analyzer.data(sample_file)
-    assert_equal([1, 2, 0, 0, 1, 0, 11], count_info) unless (defined? PLATFORM && PLATFORM =~ /java/) || RUBY_VERSION =~ /1.9/
+    assert_equal([1, 2, 0, 0, 1, 0, 11], count_info) if RUBY_VERSION =~ /1.8/ && 
     # JRUBY reports an if x==blah as hitting this type of line once, JRUBY also optimizes this stuff so you'd have to run with --debug to get "extra" information.  MRI hits it twice.
-    assert_equal([1, 1, 0, 0, 1, 0, 11], count_info) if (defined? PLATFORM && PLATFORM =~ /java/) || RUBY_VERSION =~ /1.9/
+    assert_equal([1, 1, 0, 0, 1, 0, 11], count_info) if (defined?(PLATFORM) == "constant" && PLATFORM =~ /java/) || RUBY_VERSION =~ /1.9/
 
     analyzer.reset
     #set_trace_func proc { |event, file, line, id, binding, classname| printf "%8s %s:%-2d %10s %8s\n", event, file, line, id, classname if (file =~ /sample_02.rb/) }

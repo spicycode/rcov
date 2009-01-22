@@ -2,7 +2,7 @@
 #
 # See LEGAL and LICENSE for licensing information.
 
-require 'rcov/version'
+require File.expand_path(File.join(File.dirname(__FILE__), 'version')) unless defined? Rcov::VERSION
 
 module Rcov
 

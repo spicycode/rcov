@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env ruby1.9
 # rcov Copyright (c) 2004-2006 Mauricio Fernandez <mfp@acm.org>
 #
 # rcov originally based on 
@@ -265,9 +265,9 @@ EOF
                  "method specified by SELECTOR",
                  "(format: Foo::Bar#method, A::B.method)") do |selector|
         case selector
-        when /([^.]+)(#|\.)(.*)/: options.report_cov_bug_for = selector
+        when /([^.]+)(#|\.)(.*)/ then options.report_cov_bug_for = selector
         else
-            raise OptionParser::InvalidArgument, selector
+          raise OptionParser::InvalidArgument, selector
         end
         options.textmode = nil
         options.html = false

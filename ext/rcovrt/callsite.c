@@ -1,21 +1,24 @@
 #include <ruby.h>
+#ifdef RUBY_19_COMPATIBILITY
+#include <ruby/st.h>
+#else
 #include <env.h>
 #include <node.h>
 #include <st.h>
+#endif
 #include <stdlib.h>
-
 
 static char callsite_hook_set_p;
 
 typedef struct {
-        char *sourcefile;
+        const char *sourcefile;
         unsigned int sourceline;
         VALUE curr_meth;
 } type_def_site;       
 static VALUE caller_info = 0;
 static VALUE method_def_site_info = 0;
 
-static caller_stack_len = 1;
+static int caller_stack_len = 1;
 
 /*
  *
@@ -46,10 +49,10 @@ record_callsite_info(VALUE args)
           count = INT2FIX(0);
   count = INT2FIX(FIX2UINT(count) + 1);
   rb_hash_aset(count_hash, caller_ary, count);
-  /*
+  /* * /
   printf("CALLSITE: %s -> %s   %d\n", RSTRING(rb_inspect(curr_meth))->ptr,
                   RSTRING(rb_inspect(caller_ary))->ptr, FIX2INT(count));
-  */
+  / * */
 
   return Qnil;
 }
@@ -68,10 +71,10 @@ record_method_def_site(VALUE args)
   rb_ary_push(def_site_info, rb_str_new2(pargs->sourcefile));
   rb_ary_push(def_site_info, INT2NUM(pargs->sourceline+1));
   rb_hash_aset(method_def_site_info, pargs->curr_meth, def_site_info);
-  /*
+  /* * /
   printf("DEFSITE: %s:%d  for %s\n", pargs->sourcefile, pargs->sourceline+1,
-                  RSTRING(rb_inspect(pargs->curr_meth))->ptr);
-  */
+                  RSTRING_PTR(rb_inspect(pargs->curr_meth)));
+  / * */
   
   return Qnil;
 }
@@ -79,8 +82,11 @@ record_method_def_site(VALUE args)
 static VALUE
 callsite_custom_backtrace(int lev)
 {
-  struct FRAME *frame = ruby_frame;
+#ifdef RUBY_19_COMPATIBILITY
+  return rb_eval_string("caller.map do |line|\nmd = /^([^:]*)(?::(\\d+)(?::in `(?:block in )?(.*)'))?/.match(line)\nraise \"Bad backtrace format\" unless md\n[nil, md[3] ? md[3].to_sym : nil, md[1], (md[2] || '').to_i]\nend");
+#else
   VALUE ary;
+  struct FRAME *frame = ruby_frame;
   NODE *n;
   VALUE level;
   VALUE klass;
@@ -115,39 +121,56 @@ callsite_custom_backtrace(int lev)
   }
 
   return ary;
+#endif
 }
-  
+
 static void
+#ifdef RUBY_19_COMPATIBILITY
+coverage_event_callsite_hook(rb_event_flag_t event, VALUE node, 
+                VALUE self, ID mid, VALUE klass)
+#else
 coverage_event_callsite_hook(rb_event_t event, NODE *node, VALUE self, 
                 ID mid, VALUE klass)
+#endif
 {
- VALUE caller_ary;
- VALUE curr_meth;
- VALUE args[2];
- int status;
+VALUE caller_ary;
+VALUE curr_meth;
+VALUE args[2];
+int status;
 
- caller_ary = callsite_custom_backtrace(caller_stack_len);
+caller_ary = callsite_custom_backtrace(caller_stack_len);
 
- if(TYPE(klass) == T_ICLASS) {
-         klass = CLASS_OF(klass);
- }
- curr_meth = rb_ary_new();
- rb_ary_push(curr_meth, klass);
- rb_ary_push(curr_meth, ID2SYM(mid));
+if(TYPE(klass) == T_ICLASS) {
+        klass = CLASS_OF(klass);
+}
+curr_meth = rb_ary_new();
+rb_ary_push(curr_meth, klass);
+rb_ary_push(curr_meth, ID2SYM(rb_frame_this_func()));
 
- args[0] = caller_ary;
- args[1] = curr_meth;
- rb_protect(record_callsite_info, (VALUE)args, &status);
- if(!status && node) {
-         type_def_site args;        
-         
-         args.sourcefile = node->nd_file;
-         args.sourceline = nd_line(node) - 1;
-         args.curr_meth = curr_meth;
-         rb_protect(record_method_def_site, (VALUE)&args, NULL);
- }
- if(status)
-         rb_gv_set("$!", Qnil);
+args[0] = caller_ary;
+args[1] = curr_meth;
+rb_protect(record_callsite_info, (VALUE)args, &status);
+#ifdef RUBY_19_COMPATIBILITY
+if(!status) {
+        type_def_site args;
+
+        args.sourcefile = rb_sourcefile();
+        args.sourceline = rb_sourceline();
+        args.curr_meth = curr_meth;
+        rb_protect(record_method_def_site, (VALUE)&args, NULL);
+}
+#else
+if(!status && node) {
+        type_def_site args;        
+        
+        args.sourcefile = node->nd_file;
+        args.sourceline = nd_line(node) - 1;
+        args.curr_meth = curr_meth;
+        rb_protect(record_method_def_site, (VALUE)&args, NULL);
+}
+#endif
+if(status)
+        rb_gv_set("$!", Qnil);
 }
 
 
@@ -158,9 +181,14 @@ cov_install_callsite_hook(VALUE self)
           if(TYPE(caller_info) != T_HASH)
                   caller_info = rb_hash_new();
           callsite_hook_set_p = 1;
+#ifdef RUBY_19_COMPATIBILITY
+          VALUE something = 0;
           rb_add_event_hook(coverage_event_callsite_hook, 
-                          RUBY_EVENT_CALL);
-          
+                  RUBY_EVENT_CALL, something);
+#else 
+          rb_add_event_hook(coverage_event_callsite_hook, 
+                  RUBY_EVENT_CALL);
+#endif          
           return Qtrue;
   } else
           return Qfalse;
@@ -213,7 +241,7 @@ Init_rcov_callsite()
  VALUE mRCOV__;
  ID id_rcov = rb_intern("Rcov");
  ID id_coverage__ = rb_intern("RCOV__");
- ID id_script_lines__ = rb_intern("SCRIPT_LINES__");
+ // ID id_script_lines__ = rb_intern("SCRIPT_LINES__");
 
  if(rb_const_defined(rb_cObject, id_rcov)) 
          mRcov = rb_const_get(rb_cObject, id_rcov);

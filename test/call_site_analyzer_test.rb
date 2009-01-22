@@ -83,6 +83,8 @@ class TestCallSiteAnalyzer < Test::Unit::TestCase
 
   def test_basic_callsite_recording
     @a.run_hooked{ @o.f1 }
+    require 'pp'
+    pp @a.analyzed_classes
     assert(@a.analyzed_classes.include?("Rcov::Test::Temporary::Sample03"))
     assert_equal(%w[f1 f2], @a.analyzed_methods("Rcov::Test::Temporary::Sample03"))
     verify_callsites_equal({[[Rcov::Test::Temporary::Sample03, :f1, "./test/assets/sample_03.rb", 4]] => 10},
