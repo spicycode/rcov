@@ -9,7 +9,7 @@
 # already loaded before coverage tracing is activated, so only code inside
 # methods is actually executed under rcov's inspection.
 
-require File.dirname(__FILE__) + '/rcov/version' unless defined? Rcov::VERSION 
+require File.dirname(__FILE__) + '/rcov/version' unless defined? Rcov::VERSION
 require File.dirname(__FILE__) + '/rcov/coverage_info'
 require File.dirname(__FILE__) + '/rcov/differential_analyzer'
 require File.dirname(__FILE__) + '/rcov/call_site_analyzer'
@@ -20,7 +20,7 @@ require File.dirname(__FILE__) + '/rcov/lowlevel'
 SCRIPT_LINES__ = {} unless defined? SCRIPT_LINES__
 
 # module Rcov
-# 
+#
 # end # Rcov
 
 # vi: set sw=2:

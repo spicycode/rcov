@@ -29,7 +29,7 @@ module Rcov
     def initialize(name, lines, counts, comments_run_by_default = false)
       @name = name
       @lines = lines
-      initial_coverage = counts.map{|x| ((x && x.is_a?(::String) && x[/^\d+/].to_i) || 0) > 0 ? true : false }
+      initial_coverage = counts.map{|x| ((x.respond_to?(:gsub) && x[/^\d*/].to_i) || 0) > 0 ? true : false }
       @coverage = CoverageInfo.new initial_coverage
       @counts = counts
       @is_begin_comment = nil
@@ -73,7 +73,7 @@ module Rcov
       return 0 if @coverage.size == 0
       # puts "coverage: \n\n"
       # puts coverage.inspect
-      # puts @coverage.inject(0.0) {|s,a| s + (a ? 1:0) } 
+      # puts @coverage.inject(0.0) {|s,a| s + (a ? 1:0) }
       # puts @coverage.size
       # puts "\n\n"
       @coverage.inject(0.0) {|s,a| s + (a ? 1:0) } / @coverage.size

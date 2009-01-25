@@ -1,14 +1,9 @@
 require 'test/unit'
-require 'rcov'
 require 'pathname'
 require 'fileutils'
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'rcov'))
 
 
 def get_ruby_bin
-  # if defined? PLATFORM && PLATFORM == 'java'
-  #   @@ruby_bin ||= 'jruby'
-  # else
-  #   @@ruby_bin ||= `ps -A | grep #{$$}`.match(/(\/[^\s]+)/)[0]
-  # end
-  'ruby'
+  @ruby_version ||= ENV['ENV_RUBY'] || 'ruby'
 end

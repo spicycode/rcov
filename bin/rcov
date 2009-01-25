@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby1.9
+#!/usr/bin/env ruby
 # rcov Copyright (c) 2004-2006 Mauricio Fernandez <mfp@acm.org>
 #
 # rcov originally based on 
@@ -10,10 +10,13 @@
 # See LEGAL and LICENSE for additional licensing information.
 #
 
+puts "Ruby Version: #{RUBY_VERSION}"
+
 require 'cgi'
 require 'rbconfig'
 require 'optparse'
 require 'ostruct'
+
 
 SCRIPT_LINES__ = {} unless defined? SCRIPT_LINES__
 require 'rcov/version'
@@ -252,7 +255,7 @@ EOF
     opts.on_tail("-h", "--help", "Show extended help message") do
         require 'pp'
         puts opts
-        puts <<EOF
+        puts <<-EOF
 
 Files matching any of the following regexps will be omitted in the report(s):
 #{PP.pp(options.skip, "").chomp}
@@ -309,6 +312,10 @@ options.loadpaths.reverse_each{|x| $:.unshift x}
 # since we need to set $: before.
 
 require 'rcov'
+require 'pp'
+
+puts "Testing ARGV "
+pp ARGV
 
 options.callsites = true if options.report_cov_bug_for
 options.textmode = :gcc if !options.textmode and options.gcc_output
@@ -387,6 +394,10 @@ end
 
 formatters << make_formatter[Rcov::TextCoverageDiff] if options.coverage_diff_save
 
+require 'pp'
+puts "class of #{formatters.class}"
+pp formatters
+
 if options.aggregate_file
     saved_aggregate_data ||= rcov_load_aggregate_data(options.aggregate_file)
     if saved_aggregate_data[:coverage]
@@ -405,7 +416,7 @@ END {
     $rcov_code_coverage_analyzer.remove_hook
     $rcov_callsite_analyzer.remove_hook if $rcov_callsite_analyzer
     rcov_save_aggregate_data(options.aggregate_file) if options.aggregate_file
-    $rcov_code_coverage_analyzer.dump_coverage_info(formatters)
+    formatters = $rcov_code_coverage_analyzer.dump_coverage_info(formatters)
     if options.report_cov_bug_for
         defsite = $rcov_callsite_analyzer.defsite(options.report_cov_bug_for)
         if !defsite
@@ -416,7 +427,7 @@ EOF
             exit(-1)
         end
         lines, mark_info, count_info = $rcov_code_coverage_analyzer.data(defsite.file)
-        puts <<EOF
+        puts <<-EOF
 
 Please fill in the blanks in the following report.
 
@@ -449,7 +460,8 @@ EOF
         end
         exit
     end
-    if formatters.all?{|formatter| formatter.sorted_file_pairs.empty? }
+    if formatters.all?{|formatter| puts formatter.sorted_file_pairs.inspect
+      formatter.sorted_file_pairs.empty? }
         require 'pp'
         $stderr.puts <<-EOF
 

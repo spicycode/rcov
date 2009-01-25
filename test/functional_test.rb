@@ -53,6 +53,7 @@ class TestFunctional < Test::Unit::TestCase
     rcov = @@dir+"../bin/rcov"
     ruby_opts = "-I../lib:../ext/rcovrt"
     with_testdir do
+      puts "\ntrying:   cd #{@@dir}; #{ruby_bin} #{ruby_opts} #{rcov} #{opts} -o #{@@actual_coverage_dir} #{script} #{opts_tail}"
       `cd #{@@dir}; #{ruby_bin} #{ruby_opts} #{rcov} #{opts} -o #{@@actual_coverage_dir} #{script} #{opts_tail}`
       yield if block_given?
     end

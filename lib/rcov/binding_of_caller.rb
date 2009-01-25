@@ -77,7 +77,7 @@ def Binding.of_caller(&block)
     Thread.critical = old_critical
     case block.arity
       when 1 then yield(result)
-      else yield(result, extra_data)        
+      else yield(result, extra_data)
     end
   end
 end

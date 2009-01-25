@@ -88,7 +88,7 @@ EOF
     analyzer = Rcov::CodeCoverageAnalyzer.new
     analyzer.run_hooked{ load sample_file }
     line_info, cov_info, count_info = analyzer.data(sample_file)
-    assert_equal([1, 2, 0, 0, 1, 0, 11], count_info) if RUBY_VERSION =~ /1.8/ && 
+    assert_equal([1, 2, 0, 0, 1, 0, 11], count_info) if RUBY_VERSION =~ /1.8/ &&
     # JRUBY reports an if x==blah as hitting this type of line once, JRUBY also optimizes this stuff so you'd have to run with --debug to get "extra" information.  MRI hits it twice.
     assert_equal([1, 1, 0, 0, 1, 0, 11], count_info) if (defined?(PLATFORM) == "constant" && PLATFORM =~ /java/) || RUBY_VERSION =~ /1.9/
 
@@ -182,7 +182,10 @@ EOF
         a1.reset if i == 49
       end
     end
-
+    
+    require 'pp'
+    pp a1
+    puts "\n#{a1.data(samplefile).class}\n\n"
     assert_equal([0, 50, 50, 50, 0], a1.data(sample_file)[2]) if RUBY_VERSION =~ /1.8/
     assert_equal([0, 100, 50, 0, 0], a1.data(sample_file)[2]) if RUBY_VERSION =~ /1.9/
   end

@@ -50,8 +50,8 @@ record_callsite_info(VALUE args)
   count = INT2FIX(FIX2UINT(count) + 1);
   rb_hash_aset(count_hash, caller_ary, count);
   /* * /
-  printf("CALLSITE: %s -> %s   %d\n", RSTRING(rb_inspect(curr_meth))->ptr,
-                  RSTRING(rb_inspect(caller_ary))->ptr, FIX2INT(count));
+  printf("CALLSITE: %s -> %s   %d\n", RSTRING_PTR(rb_inspect(curr_meth)),
+                  RSTRING_PTR(rb_inspect(caller_ary)), FIX2INT(count));
   / * */
 
   return Qnil;
@@ -83,7 +83,37 @@ static VALUE
 callsite_custom_backtrace(int lev)
 {
 #ifdef RUBY_19_COMPATIBILITY
-  return rb_eval_string("caller.map do |line|\nmd = /^([^:]*)(?::(\\d+)(?::in `(?:block in )?(.*)'))?/.match(line)\nraise \"Bad backtrace format\" unless md\n[nil, md[3] ? md[3].to_sym : nil, md[1], (md[2] || '').to_i]\nend");
+  ID id;
+  VALUE klass;
+  VALUE klass_path;
+  VALUE eval_string;
+  
+  rb_frame_method_id_and_class(&id, &klass);
+  if (id == ID_ALLOCATOR)
+    return Qnil;
+  if (klass) {
+    if (TYPE(klass) == T_ICLASS) {
+      klass = RBASIC(klass)->klass;
+    }
+    else if (FL_TEST(klass, FL_SINGLETON)) {
+      klass = rb_iv_get(klass, "__attached__");
+    }
+  }
+  // rb_sprintf("\"#<Class:%s>\"", RSTRING_PTR(klass_path))
+  
+  /*
+  klass = class << klass; self end unless klass === eval("self", binding)
+  */
+  
+  klass_path = rb_class_path(klass);
+  VALUE reciever = rb_funcall(rb_binding_new(), rb_intern("eval"), 1, rb_str_new2("self"));
+  if (rb_funcall(klass, rb_intern("=="), 1, reciever) == Qtrue) {
+    klass_path = rb_sprintf("\"#<Class:%s>\"", RSTRING_PTR(klass_path));
+    OBJ_FREEZE(klass_path);
+  }
+  
+  eval_string = rb_sprintf("caller[%d, 1].map do |line|\nmd = /^([^:]*)(?::(\\d+)(?::in `(?:block in )?(.*)'))?/.match(line)\nraise \"Bad backtrace format\" unless md\n[%s, md[3] ? md[3].to_sym : nil, md[1], (md[2] || '').to_i]\nend", lev, RSTRING_PTR(klass_path));
+  return rb_eval_string(RSTRING_PTR(eval_string));
 #else
   VALUE ary;
   struct FRAME *frame = ruby_frame;
@@ -133,44 +163,79 @@ coverage_event_callsite_hook(rb_event_t event, NODE *node, VALUE self,
                 ID mid, VALUE klass)
 #endif
 {
-VALUE caller_ary;
-VALUE curr_meth;
-VALUE args[2];
-int status;
+  VALUE caller_ary;
+  VALUE curr_meth;
+  VALUE args[2];
+  int status;
 
-caller_ary = callsite_custom_backtrace(caller_stack_len);
+  caller_ary = callsite_custom_backtrace(caller_stack_len);
 
-if(TYPE(klass) == T_ICLASS) {
-        klass = CLASS_OF(klass);
-}
-curr_meth = rb_ary_new();
-rb_ary_push(curr_meth, klass);
-rb_ary_push(curr_meth, ID2SYM(rb_frame_this_func()));
-
-args[0] = caller_ary;
-args[1] = curr_meth;
-rb_protect(record_callsite_info, (VALUE)args, &status);
 #ifdef RUBY_19_COMPATIBILITY
-if(!status) {
-        type_def_site args;
+  VALUE klass_path;
+  curr_meth = rb_ary_new();
+   
+  rb_frame_method_id_and_class(&mid, &klass);
+  
+  if (mid == ID_ALLOCATOR)
+    return Qnil;
+  if (klass) {
+    if (TYPE(klass) == T_ICLASS) {
+      klass = RBASIC(klass)->klass;
+    }
+    else if (FL_TEST(klass, FL_SINGLETON)) {
+      klass = rb_iv_get(klass, "__attached__");
+    }
+  }
+  
+  /*
+  klass = class << klass; self end unless klass === eval("self", binding)
+  */
+  
+  klass_path = rb_class_path(klass);
+  VALUE reciever = rb_funcall(rb_binding_new(), rb_intern("eval"), 1, rb_str_new2("self"));
+  if (rb_funcall(klass, rb_intern("=="), 1, reciever) == Qtrue) {
+    klass_path = rb_sprintf("#<Class:%s>", RSTRING_PTR(klass_path));
+   OBJ_FREEZE(klass_path);
+  }
+    
+  rb_ary_push(curr_meth, klass_path);
+  rb_ary_push(curr_meth, ID2SYM(mid));
 
-        args.sourcefile = rb_sourcefile();
-        args.sourceline = rb_sourceline();
-        args.curr_meth = curr_meth;
-        rb_protect(record_method_def_site, (VALUE)&args, NULL);
-}
+  args[0] = caller_ary;
+  args[1] = curr_meth;
+  rb_protect(record_callsite_info, (VALUE)args, &status);
+
+  if(!status) {
+    type_def_site args;
+
+    args.sourcefile = rb_sourcefile();
+    args.sourceline = rb_sourceline();
+    args.curr_meth = curr_meth;
+    rb_protect(record_method_def_site, (VALUE)&args, NULL);
+  }
 #else
-if(!status && node) {
-        type_def_site args;        
-        
-        args.sourcefile = node->nd_file;
-        args.sourceline = nd_line(node) - 1;
-        args.curr_meth = curr_meth;
-        rb_protect(record_method_def_site, (VALUE)&args, NULL);
-}
+  if(TYPE(klass) == T_ICLASS) {
+    klass = CLASS_OF(klass);
+  }
+  curr_meth = rb_ary_new();
+  rb_ary_push(curr_meth, klass);
+  rb_ary_push(curr_meth, ID2SYM(mid));
+
+  args[0] = caller_ary;
+  args[1] = curr_meth;
+  rb_protect(record_callsite_info, (VALUE)args, &status);
+  if(!status && node) {
+    type_def_site args;        
+
+    args.sourcefile = node->nd_file;
+    args.sourceline = nd_line(node) - 1;
+    args.curr_meth = curr_meth;
+    rb_protect(record_method_def_site, (VALUE)&args, NULL);
+  }
+
 #endif
-if(status)
-        rb_gv_set("$!", Qnil);
+  if(status)
+    rb_gv_set("$!", Qnil);
 }
 
 
