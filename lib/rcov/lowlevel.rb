@@ -22,7 +22,7 @@ module RCOV__
   pure_ruby_impl_needed = true
   unless defined? $rcov_do_not_use_rcovrt
     begin
-      require 'rcovrt'
+      require File.dirname(__FILE__) + '/../../ext/rcovrt/rcovrt'
       abi = [0,0,0]
       begin
         abi = RCOV__.ABI

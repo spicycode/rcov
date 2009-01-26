@@ -81,7 +81,16 @@ coverage_increase_counter_uncached(char *sourcefile, unsigned int sourceline,
 static void
 coverage_mark_caller()
 {
-/*  struct FRAME *frame = ruby_frame;
+#ifdef RUBY_19_COMPATIBILITY
+  // if @coverage_hook_activated
+  //   COVER[file] ||= Array.new(SCRIPT_LINES__[file].size, 0)
+  //   COVER[file][line - 1] ||= 0
+  //   COVER[file][line - 1] += 1
+  // end
+  
+  coverage_increase_counter_uncached(rb_sourcefile(), rb_sourceline(), 1);
+#else
+  struct FRAME *frame = ruby_frame;
   NODE *n;
   
   if (frame->last_func == ID_ALLOCATOR) {
@@ -98,7 +107,8 @@ coverage_mark_caller()
                   coverage_increase_counter_uncached(n->nd_file, nd_line(n) - 1, 1);
           }
           break;
-  } */
+  }
+#endif
 }
 
 

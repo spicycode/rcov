@@ -183,9 +183,6 @@ EOF
       end
     end
     
-    require 'pp'
-    pp a1
-    puts "\n#{a1.data(samplefile).class}\n\n"
     assert_equal([0, 50, 50, 50, 0], a1.data(sample_file)[2]) if RUBY_VERSION =~ /1.8/
     assert_equal([0, 100, 50, 0, 0], a1.data(sample_file)[2]) if RUBY_VERSION =~ /1.9/
   end
