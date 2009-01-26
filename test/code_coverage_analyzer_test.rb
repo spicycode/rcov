@@ -182,7 +182,7 @@ EOF
         a1.reset if i == 49
       end
     end
-    
+
     assert_equal([0, 50, 50, 50, 0], a1.data(sample_file)[2]) if RUBY_VERSION =~ /1.8/
     assert_equal([0, 100, 50, 0, 0], a1.data(sample_file)[2]) if RUBY_VERSION =~ /1.9/
   end

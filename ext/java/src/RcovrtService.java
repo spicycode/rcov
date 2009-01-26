@@ -110,7 +110,7 @@ public class RcovrtService implements BasicLibraryService {
     public static IRubyObject getAbi( IRubyObject recv ) {
         RubyArray ary = recv.getRuntime().newArray();
         ary.add( RubyFixnum.int2fix( recv.getRuntime(), 2L ) );
-        ary.add( RubyFixnum.int2fix( recv.getRuntime(), 0L ) );
+        ary.add( RubyFixnum.int2fix( recv.getRuntime(), 1L ) );
         ary.add( RubyFixnum.int2fix( recv.getRuntime(), 0L ) );
         return ary;
     }
