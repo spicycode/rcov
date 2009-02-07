@@ -87,10 +87,6 @@ callsite_custom_backtrace(int lev)
   VALUE klass;
   VALUE klass_path;
   VALUE eval_string;
-  VALUE caller;
-  VALUE results;
-  VALUE level;
-  VALUE reciever;
   
   rb_frame_method_id_and_class(&id, &klass);
   if (id == ID_ALLOCATOR)
@@ -103,28 +99,17 @@ callsite_custom_backtrace(int lev)
       klass = rb_iv_get(klass, "__attached__");
     }
   }
+  // rb_sprintf("\"#<Class:%s>\"", RSTRING_PTR(klass_path))
   
   /*
   klass = class << klass; self end unless klass === eval("self", binding)
   */
   
   klass_path = rb_class_path(klass);
-  reciever = rb_funcall(rb_binding_new(), rb_intern("eval"), 1, rb_str_new2("self"));
+  VALUE reciever = rb_funcall(rb_binding_new(), rb_intern("eval"), 1, rb_str_new2("self"));
   if (rb_funcall(klass, rb_intern("=="), 1, reciever) == Qtrue) {
     klass_path = rb_sprintf("\"#<Class:%s>\"", RSTRING_PTR(klass_path));
     OBJ_FREEZE(klass_path);
-  }
-  
-  caller = rb_funcall(rb_mKernel, rb_intern('caller'));
-  caller = rb_funcall(result, rb_intern('slice'), 2, INT2NUM(lev), INT2NUM(1));
-  
-  result = rb_ary_new();
-  
-  for (i = 0; i < RARRAY_LEN(caller); i++) {
-    level = rb_ary_new();
-    // new regex:
-    "^([^:]*)(?::(\\d+)(?::in `(?:block in )?(.*)'))?"
-    rb_ary_push(result, RUBY_STRING(rb_class2name(rb_ary_entry(array, i))));
   }
   
   eval_string = rb_sprintf("caller[%d, 1].map do |line|\nmd = /^([^:]*)(?::(\\d+)(?::in `(?:block in )?(.*)'))?/.match(line)\nraise \"Bad backtrace format\" unless md\n[%s, md[3] ? md[3].to_sym : nil, md[1], (md[2] || '').to_i]\nend", lev, RSTRING_PTR(klass_path));
@@ -201,6 +186,10 @@ coverage_event_callsite_hook(rb_event_t event, NODE *node, VALUE self,
       klass = rb_iv_get(klass, "__attached__");
     }
   }
+  
+  /*
+  klass = class << klass; self end unless klass === eval("self", binding)
+  */
   
   klass_path = rb_class_path(klass);
   VALUE reciever = rb_funcall(rb_binding_new(), rb_intern("eval"), 1, rb_str_new2("self"));
