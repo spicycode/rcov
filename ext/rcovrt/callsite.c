@@ -177,7 +177,7 @@ coverage_event_callsite_hook(rb_event_t event, NODE *node, VALUE self,
   rb_frame_method_id_and_class(&mid, &klass);
   
   if (mid == ID_ALLOCATOR)
-    return Qnil;
+    return; //Qnil;
   if (klass) {
     if (TYPE(klass) == T_ICLASS) {
       klass = RBASIC(klass)->klass;
