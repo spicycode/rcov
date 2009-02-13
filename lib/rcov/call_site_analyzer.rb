@@ -98,8 +98,7 @@ module Rcov
     end
 
     def initialize
-      super(:install_callsite_hook, :remove_callsite_hook,
-            :reset_callsite)
+      super(:install_callsite_hook, :remove_callsite_hook, :reset_callsite)
     end
 
     # Classes whose methods have been called.
