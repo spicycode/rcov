@@ -1,11 +1,5 @@
 #include <ruby.h>
-#ifdef RUBY_19_COMPATIBILITY
 #include <ruby/st.h>
-#else
-#include <env.h>
-#include <node.h>
-#include <st.h>
-#endif
 #include <stdlib.h>
 #include <assert.h>
 
@@ -14,10 +8,6 @@
 #define RCOVRT_VERSION_MAJOR 2
 #define RCOVRT_VERSION_MINOR 0
 #define RCOVRT_VERSION_REV   0
-
-#ifndef RARRAY_LEN
-#define RARRAY_LEN(a) RARRAY(a)->len
-#endif
 
 static VALUE mRcov;
 static VALUE mRCOV__;
@@ -81,7 +71,6 @@ coverage_increase_counter_uncached(char *sourcefile, unsigned int sourceline,
 static void
 coverage_mark_caller()
 {
-#ifdef RUBY_19_COMPATIBILITY
   // if @coverage_hook_activated
   //   COVER[file] ||= Array.new(SCRIPT_LINES__[file].size, 0)
   //   COVER[file][line - 1] ||= 0
@@ -89,26 +78,6 @@ coverage_mark_caller()
   // end
   
   coverage_increase_counter_uncached(rb_sourcefile(), rb_sourceline(), 1);
-#else
-  struct FRAME *frame = ruby_frame;
-  NODE *n;
-  
-  if (frame->last_func == ID_ALLOCATOR) {
-          frame = frame->prev;
-  }
-  for (; frame && (n = frame->node); frame = frame->prev) {
-          if (frame->prev && frame->prev->last_func) {
-                  if (frame->prev->node == n) {
-                          if (frame->prev->last_func == frame->last_func) continue;
-                  }
-                  coverage_increase_counter_uncached(n->nd_file, nd_line(n) - 1, 1);
-          }
-          else {
-                  coverage_increase_counter_uncached(n->nd_file, nd_line(n) - 1, 1);
-          }
-          break;
-  }
-#endif
 }
 
 
@@ -124,13 +93,8 @@ coverage_increase_counter_cached(char *sourcefile, int sourceline)
 }
 
 static void
-#ifdef RUBY_19_COMPATIBILITY
 coverage_event_coverage_hook(rb_event_flag_t event, VALUE node, 
                 VALUE self, ID mid, VALUE klass)
-#else
-coverage_event_coverage_hook(rb_event_t event, NODE *node, VALUE self, 
-                ID mid, VALUE klass)
-#endif
 {
  char *sourcefile;
  unsigned int sourceline;
@@ -172,7 +136,6 @@ coverage_event_coverage_hook(rb_event_t event, NODE *node, VALUE self,
          return;
  }
 
-#ifdef RUBY_19_COMPATIBILITY 
  // printf("NODE? %s , %s\n", rb_id2name(rb_frame_this_func()), RSTRING_PTR(rb_inspect(node)));
  
  sourcefile = rb_sourcefile();
@@ -182,15 +145,6 @@ coverage_event_coverage_hook(rb_event_t event, NODE *node, VALUE self,
          in_hook--;
          return;
  }
-#else
- if(node == NULL) {
-         in_hook--;
-         return;
- }
-
- sourcefile = node->nd_file;
- sourceline = nd_line(node) - 1;
-#endif
 
  coverage_increase_counter_cached(sourcefile, sourceline);
  if(event & RUBY_EVENT_CALL)
@@ -208,16 +162,10 @@ cov_install_coverage_hook(VALUE self)
           coverage_hook_set_p = 1;
           /* TODO: allow C_CALL too, since it's supported already
            * the overhead is around ~30%, tested on typo */
-#ifdef RUBY_19_COMPATIBILITY
            VALUE holder = 0;
            rb_add_event_hook(coverage_event_coverage_hook, 
                         RUBY_EVENT_ALL & ~RUBY_EVENT_C_CALL &
                         ~RUBY_EVENT_C_RETURN & ~RUBY_EVENT_CLASS, holder);
-#else
-          rb_add_event_hook(coverage_event_coverage_hook, 
-                       RUBY_EVENT_ALL & ~RUBY_EVENT_C_CALL &
-                       ~RUBY_EVENT_C_RETURN & ~RUBY_EVENT_CLASS);
-#endif          
           return Qtrue;
   }
   else
