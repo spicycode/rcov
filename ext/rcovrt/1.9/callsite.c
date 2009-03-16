@@ -1,11 +1,5 @@
 #include <ruby.h>
-#ifdef RUBY_19_COMPATIBILITY
 #include <ruby/st.h>
-#else
-#include <env.h>
-#include <node.h>
-#include <st.h>
-#endif
 #include <stdlib.h>
 
 static char callsite_hook_set_p;
@@ -82,7 +76,6 @@ record_method_def_site(VALUE args)
 static VALUE
 callsite_custom_backtrace(int lev)
 {
-#ifdef RUBY_19_COMPATIBILITY
   ID id;
   VALUE klass;
   VALUE klass_path;
@@ -114,54 +107,11 @@ callsite_custom_backtrace(int lev)
   
   eval_string = rb_sprintf("caller[%d, 1].map do |line|\nmd = /^([^:]*)(?::(\\d+)(?::in `(?:block in )?(.*)'))?/.match(line)\nraise \"Bad backtrace format\" unless md\n[%s, md[3] ? md[3].to_sym : nil, md[1], (md[2] || '').to_i]\nend", lev, RSTRING_PTR(klass_path));
   return rb_eval_string(RSTRING_PTR(eval_string));
-#else
-  VALUE ary;
-  struct FRAME *frame = ruby_frame;
-  NODE *n;
-  VALUE level;
-  VALUE klass;
-
-  ary = rb_ary_new();
-  if (frame->last_func == ID_ALLOCATOR) {
-          frame = frame->prev;
-  }
-  for (; frame && (n = frame->node); frame = frame->prev) {
-          if (frame->prev && frame->prev->last_func) {
-                  if (frame->prev->node == n) continue;
-                  level = rb_ary_new();
-                  klass = frame->prev->last_class ? frame->prev->last_class : Qnil;
-                  if(TYPE(klass) == T_ICLASS) {
-                          klass = CLASS_OF(klass);
-                  }
-                  rb_ary_push(level, klass);
-                  rb_ary_push(level, ID2SYM(frame->prev->last_func));
-                  rb_ary_push(level, rb_str_new2(n->nd_file));
-                  rb_ary_push(level, INT2NUM(nd_line(n)));
-          }
-          else {
-                  level = rb_ary_new();
-                  rb_ary_push(level, Qnil);
-                  rb_ary_push(level, Qnil);
-                  rb_ary_push(level, rb_str_new2(n->nd_file));
-                  rb_ary_push(level, INT2NUM(nd_line(n)));
-          }
-          rb_ary_push(ary, level);
-          if(--lev == 0)
-                  break;
-  }
-
-  return ary;
-#endif
 }
 
 static void
-#ifdef RUBY_19_COMPATIBILITY
 coverage_event_callsite_hook(rb_event_flag_t event, VALUE node, 
                 VALUE self, ID mid, VALUE klass)
-#else
-coverage_event_callsite_hook(rb_event_t event, NODE *node, VALUE self, 
-                ID mid, VALUE klass)
-#endif
 {
   VALUE caller_ary;
   VALUE curr_meth;
@@ -170,7 +120,6 @@ coverage_event_callsite_hook(rb_event_t event, NODE *node, VALUE self,
 
   caller_ary = callsite_custom_backtrace(caller_stack_len);
 
-#ifdef RUBY_19_COMPATIBILITY
   VALUE klass_path;
   curr_meth = rb_ary_new();
    
@@ -213,27 +162,6 @@ coverage_event_callsite_hook(rb_event_t event, NODE *node, VALUE self,
     args.curr_meth = curr_meth;
     rb_protect(record_method_def_site, (VALUE)&args, NULL);
   }
-#else
-  if(TYPE(klass) == T_ICLASS) {
-    klass = CLASS_OF(klass);
-  }
-  curr_meth = rb_ary_new();
-  rb_ary_push(curr_meth, klass);
-  rb_ary_push(curr_meth, ID2SYM(mid));
-
-  args[0] = caller_ary;
-  args[1] = curr_meth;
-  rb_protect(record_callsite_info, (VALUE)args, &status);
-  if(!status && node) {
-    type_def_site args;        
-
-    args.sourcefile = node->nd_file;
-    args.sourceline = nd_line(node) - 1;
-    args.curr_meth = curr_meth;
-    rb_protect(record_method_def_site, (VALUE)&args, NULL);
-  }
-
-#endif
   if(status)
     rb_gv_set("$!", Qnil);
 }
@@ -246,14 +174,9 @@ cov_install_callsite_hook(VALUE self)
           if(TYPE(caller_info) != T_HASH)
                   caller_info = rb_hash_new();
           callsite_hook_set_p = 1;
-#ifdef RUBY_19_COMPATIBILITY
           VALUE something = 0;
           rb_add_event_hook(coverage_event_callsite_hook, 
                   RUBY_EVENT_CALL, something);
-#else 
-          rb_add_event_hook(coverage_event_callsite_hook, 
-                  RUBY_EVENT_CALL);
-#endif          
           return Qtrue;
   } else
           return Qfalse;
