@@ -7,10 +7,9 @@ unless RUBY_PLATFORM == 'java' then
     if ENV["USE_GCOV"] and Config::CONFIG['CC'] =~ /gcc/ and
       have_library("gcov", "__gcov_open")
       $CFLAGS << " -fprofile-arcs -ftest-coverage"
-      create_makefile("rcovrt")
-    else
-      
-      create_makefile("rcovrt")
+      create_makefile("rcovrt", "1.9/")
+    else      
+      create_makefile("rcovrt", "1.9/")
     end
   end
 end
