@@ -1,3 +1,7 @@
+=================================================
+# NOTE: The repository has moved to http://github.com/relevance/rcov.   
+=================================================
+
 # RCov - Code Coverage for Ruby
 
 ## Why? What?
